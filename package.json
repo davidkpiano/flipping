@@ -1,6 +1,6 @@
 {
   "name": "flipping",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Flipping awesome animations.",
   "main": "index.js",
   "scripts": {
