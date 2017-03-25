@@ -4,19 +4,19 @@ var path = require('path');
 'use strict';
 
 module.exports = {
-  entry: path.join(__dirname, 'src/index'),
+  entry: path.join(__dirname, './src/index'),
   output: {
     library: 'Flipping',
     libraryTarget: 'umd',
+    filename: 'dist/flipping.min.js',
+  },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js']
   },
   module: {
     loaders: [
-      { test: /\.js$/, loaders: ['babel-loader'], exclude: /node_modules/ },
-    ],
-  },
-  resolve: {
-    extensions: ['', '.js'],
-  },
-  plugins: [],
-  // devtool: 'inline-source-map'
-};
+      { test: /\.tsx?$/, loader: 'ts-loader' }
+    ]
+  }
+}
+

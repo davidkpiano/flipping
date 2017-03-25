@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <style>
+    *, *:before, *:after {
+  box-sizing: border-box;
+  position: relative;
+}
+
+body, html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.layer {
+  background: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+.layer.active {
+  z-index: 99
+}
+
+[data-key] {
+  width: 4rem;
+  height: 4rem;
+  outline: 1px solid blue;
+  display: inline-block;
+}
+
+[data-key].active {
+  width: 8rem;
+  height: 8rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.boxes {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 8rem;
+  height: 8rem;
+  justify-content: space-around;
+  align-content: space-around;
+}
+
+.layer + .layer .boxes {
+  flex-wrap: wrap-reverse;
+}
+
+.inner {
+  opacity: 0;
+  transition: opacity 1s ease;
+  position: absolute;
+}
+.active .inner {
+  opacity: 1;
+  position: relative;
+}
+
+  </style>
+</head>
+<body>
+  <div class="layer active">
+    <div class="boxes">
+      <div data-key="1">A</div>
+      <div data-key="2">C</div>
+      <div data-key="3">D</div>
+      <div data-key="4">B</div>
+    </div>
+  </div>
+  <div class="layer">  
+    <div class="boxes">
+      <div data-key="2" style="height: 8rem">C</div>
+      <div data-key="1">A</div>
+      <div data-key="4">B</div>
+      <div data-key="3">D</div>
+    </div>
+  </div>
+</body>
+<script src="./dist/flipping.min.js"></script>
+<script src="./node_modules/gsap/src/minified/TweenLite.min.js"></script>
+<script src="./node_modules/gsap/src/minified/plugins/CSSPlugin.min.js"></script>
+
+<script>
+  Flipping = Flipping.default;
+
+  window.flipFoo = new Flipping.web({
+    selector: () => document.querySelectorAll('.layer.active [data-key]'),
+  });
+
+  // flipFoo.onRead(({ animation }) => {
+  //   if (animation) {
+  //     animation.progress(1).kill();
+  //   }
+  // });
+  // flipFoo.onFlip((state) => {
+  //   const node = state.node;
+  //   const from = {
+  //     x: state.delta.left,
+  //     y: state.delta.top,
+  //     scaleX: state.delta.width,
+  //     scaleY: state.delta.height,
+  //     transformOrigin: 'top left',
+  //   };
+
+  //   console.log(from);
+
+  //   return TweenLite.fromTo(node, +state.key * 0.3, from, { x: 0, y: 0, scaleX: 1, scaleY: 1 });
+  // });
+
+  const boxes = document.querySelectorAll('[data-key]');
+
+  boxes.forEach(box => {
+    box.addEventListener('click', flipFoo.flipper(() => {
+      box.classList.toggle('active');
+    }));
+  });
+
+  window.foo = flipFoo.flipper(() => {
+    const layers = document.querySelectorAll('.layer');
+    layers[0].classList.toggle('active');
+    layers[1].classList.toggle('active');    
+  });
+</script>
+</html>
