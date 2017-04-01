@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build:watch",
-    "build:umd": "webpack -p src/index.js dist/flipping.min.js --config webpack.config.prod.js",
+    "build:prod": "webpack -p --config webpack.config.prod.js",
     "build:watch": "webpack --config webpack.config.prod.js -w",
     "prepublish": "npm run build:umd"
   },

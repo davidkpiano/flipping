@@ -1,3 +1,6 @@
 {
-  "compilerOptions": {}
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node"
+  }
 }

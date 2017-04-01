@@ -4,11 +4,15 @@ var path = require('path');
 'use strict';
 
 module.exports = {
-  entry: path.join(__dirname, './src/index'),
+  entry: {
+    'flipping': './src/index',
+    'flipping.web': './src/web'
+  },
   output: {
     library: 'Flipping',
     libraryTarget: 'umd',
-    filename: 'dist/flipping.min.js',
+    filename: '[name].js',
+    path: 'dist/'
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js']
@@ -18,5 +22,5 @@ module.exports = {
       { test: /\.tsx?$/, loader: 'ts-loader' }
     ]
   }
-}
+};
 

@@ -104,46 +104,46 @@ body, html {
     </div>
   </div>
 </body>
-<script src="./dist/flipping.min.js"></script>
+<script src="./dist/flipping.web.js"></script>
 <script src="./node_modules/gsap/src/minified/TweenLite.min.js"></script>
 <script src="./node_modules/gsap/src/minified/plugins/CSSPlugin.min.js"></script>
 
 <script>
-  Flipping = Flipping.default;
-
-  window.flipFoo = new Flipping.web({
-    selector: () => document.querySelectorAll('.layer.active [data-key]'),
+  window.flipFoo = new Flipping({
+    selector: () => document.querySelectorAll('.layer.active [data-key]'),  
+    duration: 300,  
   });
+  // window.flipFoo = new Flipping({
+  //   selector: () => document.querySelectorAll('.layer.active [data-key]'),
+  //   onRead: (({ animation }) => {
+  //     if (animation) {
+  //       animation.progress(1).kill();
+  //     }
+  //   }),
+  //   onFlip: ((state) => {
+  //     const node = state.node;
+  //     const from = {
+  //       x: state.delta.left,
+  //       y: state.delta.top,
+  //       scaleX: state.delta.width,
+  //       scaleY: state.delta.height,
+  //       transformOrigin: 'top left',
+  //     };
 
-  // flipFoo.onRead(({ animation }) => {
-  //   if (animation) {
-  //     animation.progress(1).kill();
-  //   }
+  //     return TweenLite.fromTo(node, 3, from, { x: 0, y: 0, scaleX: 1, scaleY: 1 });
+  //   }),
   // });
-  // flipFoo.onFlip((state) => {
-  //   const node = state.node;
-  //   const from = {
-  //     x: state.delta.left,
-  //     y: state.delta.top,
-  //     scaleX: state.delta.width,
-  //     scaleY: state.delta.height,
-  //     transformOrigin: 'top left',
-  //   };
 
-  //   console.log(from);
-
-  //   return TweenLite.fromTo(node, +state.key * 0.3, from, { x: 0, y: 0, scaleX: 1, scaleY: 1 });
-  // });
 
   const boxes = document.querySelectorAll('[data-key]');
 
   boxes.forEach(box => {
-    box.addEventListener('click', flipFoo.flipper(() => {
+    box.addEventListener('click', flipFoo.wrap(() => {
       box.classList.toggle('active');
     }));
   });
 
-  window.foo = flipFoo.flipper(() => {
+  window.foo = flipFoo.wrap(() => {
     const layers = document.querySelectorAll('.layer');
     layers[0].classList.toggle('active');
     layers[1].classList.toggle('active');    
