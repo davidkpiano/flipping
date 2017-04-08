@@ -6,20 +6,22 @@ var path = require('path');
 module.exports = {
   entry: {
     'flipping': './src/index',
-    'flipping.web': './src/web'
+    'flipping.web': './src/web',
+    'flipping.animationFrame': './src/animationFrame',
   },
   output: {
     library: 'Flipping',
     libraryTarget: 'umd',
     filename: '[name].js',
-    path: 'dist/'
+    path: path.join(__dirname, 'dist/')
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
+    extensions: ['.ts', '.tsx', '.js'],
+    modules: ['node_modules']
   },
   module: {
     loaders: [
-      { test: /\.tsx?$/, loader: 'ts-loader' }
+      { test: /\.tsx?$/, loader: 'awesome-typescript-loader' }
     ]
   }
 };

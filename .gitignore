@@ -1,5 +1,6 @@
 node_modules/
 .vscode/
 dist/
+.awcache/
 
 index.html

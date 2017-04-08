@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "node"
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "awesomeTypescriptLoaderOptions": {
+    "useBabel": true,
+    "useCache": true,
+    "useTranspileModule": true
   }
 }

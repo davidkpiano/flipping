@@ -9,7 +9,7 @@ export type FlippingOptions = {
   getDelta?: (Bounds) => Bounds,
   getBounds?: (Element) => Bounds,
   selector?: () => NodeListOf<Element>,
-  onFlip?: (state: FlipState) => any,
+  onFlip?: (state: FlipState, done?: Function) => any,
   onRead?: (state: ReadState) => void,
 };
 
@@ -73,7 +73,7 @@ class Flipping {
   readListeners: ListenerDict<ReadState>;
   bounds: { [key: string]: Bounds };
   animations: { [key: string]: any };
-  onFlip?: (state: FlipState) => any;
+  onFlip?: (state: FlipState, done: Function) => any;
   onRead?: (state: ReadState) => void;
 
   constructor(options: FlippingOptions = {}) {
@@ -93,6 +93,7 @@ class Flipping {
     this.animations = {};
   }
   read(parentNode: Element = document.documentElement) {
+    console.log('reading');
     let nodes: NodeList = this.selector(parentNode);
 
     forEach(nodes, (node) => {
@@ -111,6 +112,7 @@ class Flipping {
     });
   }
   flip(parentNode: Element = document.documentElement) {
+    console.log('flipping');
     let nodes: NodeList = this.selector(parentNode);
 
     forEach(nodes, (node) => {
@@ -128,7 +130,7 @@ class Flipping {
         animation: this.animations[key],
       };
 
-      this.animations[key] = this.onFlip(state);
+      this.animations[key] = this.onFlip(state, () => this.read(parentNode));
     });
   }
   wrap(fn: Function): Function {

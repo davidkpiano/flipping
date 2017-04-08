@@ -24,9 +24,14 @@
   },
   "homepage": "https://github.com/davidkpiano/flipping#readme",
   "devDependencies": {
+    "awesome-typescript-loader": "^3.1.2",
     "gsap": "^1.19.1",
     "ts-loader": "^2.0.2",
     "typescript": "^2.2.1",
-    "webpack": "^1.13.1"
+    "webpack": "^2.3.2"
+  },
+  "dependencies": {
+    "eases": "^1.0.8",
+    "zen-observable": "^0.5.1"
   }
 }
