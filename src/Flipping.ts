@@ -8,12 +8,13 @@ type Bounds = {
 export type FlippingOptions = {
   getDelta?: (Bounds) => Bounds,
   getBounds?: (Element) => Bounds,
-  selector?: () => NodeListOf<Element>,
+  selector?: <T>() => T,
   onFlip?: (state: FlipState, done?: Function) => any,
   onRead?: (state: ReadState) => void,
+  getKey?: () => string;
 };
 
-const identity: <T> (arg: T) => T = a => a;
+const identity: <T>(arg: T) => T = a => a;
 
 const rect = (node: Element): Bounds => {
   const {
@@ -64,6 +65,11 @@ function getDelta(a: Bounds, b: Bounds): Bounds {
   };
 }
 
+const selector = (parentNode: Element): NodeListOf<Element> =>
+  parentNode.querySelectorAll('[data-key]');
+const getKey = (node: Element): string =>
+  node.getAttribute('data-key');
+
 class Flipping {
   selector: (Element) => NodeListOf<Element>;
   getBounds: (Element) => Bounds;
@@ -77,12 +83,10 @@ class Flipping {
   onRead?: (state: ReadState) => void;
 
   constructor(options: FlippingOptions = {}) {
-    const selector = (parentNode) => parentNode.querySelectorAll('[data-key]');
-
     this.selector = options.selector || selector;
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
-    this.getKey = (node) => node.getAttribute('data-key');
+    this.getKey = options.getKey || getKey;
     this.onFlip = options.onFlip || identity;
     this.onRead = options.onRead || identity;
 
@@ -93,7 +97,6 @@ class Flipping {
     this.animations = {};
   }
   read(parentNode: Element = document.documentElement) {
-    console.log('reading');
     let nodes: NodeList = this.selector(parentNode);
 
     forEach(nodes, (node) => {
@@ -112,7 +115,6 @@ class Flipping {
     });
   }
   flip(parentNode: Element = document.documentElement) {
-    console.log('flipping');
     let nodes: NodeList = this.selector(parentNode);
 
     forEach(nodes, (node) => {
