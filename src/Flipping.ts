@@ -81,6 +81,7 @@ class Flipping {
   animations: { [key: string]: any };
   onFlip?: (state: FlipState, done: Function) => any;
   onRead?: (state: ReadState) => void;
+  listeners: {[type: string]: Function[]};
 
   constructor(options: FlippingOptions = {}) {
     this.selector = options.selector || selector;
@@ -95,9 +96,29 @@ class Flipping {
 
     this.bounds = {};
     this.animations = {};
+    this.listeners = {};
+  }
+  on(type: string, handler: Function): void {
+    (this.listeners[type] || (this.listeners[type] = [])).push(handler);
+  }
+  off(type: string, handler: Function): void {
+    const listenersOfType = this.listeners[type];
+    let index;
+    if (!listenersOfType || (index = listenersOfType.indexOf(handler)) === -1) {
+      return;
+    }
+
+    listenersOfType.splice(index, 1);
+  }
+  private emit(type: string, event: any) {
+    const listenersOfType = this.listeners[type];
+    if (!listenersOfType || !listenersOfType.length) return;
+
+    listenersOfType.forEach(handler => handler(event));
   }
   read(parentNode: Element = document.documentElement) {
     let nodes: NodeList = this.selector(parentNode);
+    const fullState: {[key: string]: ReadState} = {};
 
     forEach(nodes, (node) => {
       const key = <string>this.getKey(node);
@@ -111,16 +132,22 @@ class Flipping {
         animation,
       };
 
+      fullState[key] = state;
+
       this.onRead(state);
     });
+
+    this.emit('read', fullState);
   }
   flip(parentNode: Element = document.documentElement) {
     let nodes: NodeList = this.selector(parentNode);
+    const fullState: {[key: string]: FlipState} = {};
 
     forEach(nodes, (node) => {
       const key = <string>this.getKey(node);
       const first = this.bounds[key];
       const last = this.getBounds(node);
+      const animation = this.animations[key];
 
       const state: FlipState = {
         key,
@@ -129,11 +156,16 @@ class Flipping {
         last,
         delta: this.getDelta(first, last),
         type: !first ? 'ENTER' : !last ? 'LEAVE' : 'MOVE',
-        animation: this.animations[key],
+        animation,
       };
 
-      this.animations[key] = this.onFlip(state, () => this.read(parentNode));
+      const nextAnimation = this.onFlip(state, () => this.read(parentNode));
+
+      fullState[key] = {...state, animation: nextAnimation};
+      this.animations[key] = nextAnimation;
     });
+
+    this.emit('flip', fullState);
   }
   wrap(fn: Function): Function {
     return (...args) => {

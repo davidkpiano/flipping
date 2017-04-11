@@ -104,14 +104,14 @@ body, html {
     </div>
   </div>
 </body>
-<script src="./dist/flipping.animationFrame.js"></script>
+<script src="./dist/flipping.web.js"></script>
 <script src="./node_modules/gsap/src/minified/TweenLite.min.js"></script>
 <script src="./node_modules/gsap/src/minified/plugins/CSSPlugin.min.js"></script>
 
 <script>
   window.flipFoo = new Flipping({
     selector: () => document.querySelectorAll('.layer.active [data-key]'),  
-    // duration: 3000,  
+    duration: 30000,  
   });
   // window.flipFoo = new Flipping({
   //   selector: () => document.querySelectorAll('.layer.active [data-key]'),
@@ -148,5 +148,7 @@ body, html {
     layers[0].classList.toggle('active');
     layers[1].classList.toggle('active');    
   });
+
+  
 </script>
 </html>
