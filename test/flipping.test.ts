@@ -97,12 +97,10 @@ describe('Flipping', () => {
   });
 
   describe('on flip', () => {
-    const mockNode = createMockNode();
-    const MockFlip = createMockFlip(mockNode, {
-
-    });
-
     it('can subscribe to "flip" events and return the state', () => {
+      const mockNode = createMockNode();
+      const MockFlip = createMockFlip(mockNode, {});
+
       MockFlip.on('flip', (state) => {
         assert.property(state, 'test');
         assert.deepEqual(state.test.delta, {
@@ -121,6 +119,19 @@ describe('Flipping', () => {
         height: 200,
         width: 400,
       };
+
+      MockFlip.flip(null);
+    });
+
+    it('only flips if delta has changed', () => {
+      const mockNode = createMockNode();
+      const MockFlip = createMockFlip(mockNode, {});
+
+      MockFlip.on('flip', (state) => {
+        throw new Error('Fuck')
+      });
+
+      MockFlip.read(null);
 
       MockFlip.flip(null);
     });

@@ -69,6 +69,12 @@ const selector = (parentNode: Element): NodeListOf<Element> =>
   parentNode.querySelectorAll('[data-key]');
 const getKey = (node: Element): string =>
   node.getAttribute('data-key');
+const deltaChanged = (delta: Bounds): boolean => {
+  return !!delta.top
+    || !!delta.left
+    || (delta.width !== 1)
+    || (delta.height !== 1);
+};
 
 class Flipping {
   selector: (Element) => NodeListOf<Element>;
@@ -142,12 +148,18 @@ class Flipping {
   flip(parentNode: Element = document.documentElement) {
     let nodes: NodeList = this.selector(parentNode);
     const fullState: {[key: string]: FlipState} = {};
+    let flipped = false;
 
     forEach(nodes, (node) => {
       const key = <string>this.getKey(node);
       const first = this.bounds[key];
       const last = this.getBounds(node);
       const animation = this.animations[key];
+      const delta = this.getDelta(first, last)
+
+      if (!deltaChanged(delta)) return;
+
+      flipped = true;
 
       const state: FlipState = {
         key,
@@ -165,7 +177,7 @@ class Flipping {
       this.animations[key] = nextAnimation;
     });
 
-    this.emit('flip', fullState);
+    if (flipped) this.emit('flip', fullState);
   }
   wrap(fn: Function): Function {
     return (...args) => {
