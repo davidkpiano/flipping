@@ -1,4 +1,4 @@
-import Flipping, { FlippingOptions } from '../src/flipping';
+import Flipping, { IFlippingOptions } from '../src/flipping';
 import { assert } from 'chai';
 
 const createMockNode = () => ({
@@ -16,7 +16,7 @@ const createMockNode = () => ({
   }
 });
 
-function createMockFlip(node, options: FlippingOptions) {
+function createMockFlip(node, options: IFlippingOptions) {
   return new Flipping({
     selector: () => [node],
     ...options,

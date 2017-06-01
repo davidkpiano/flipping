@@ -1,22 +1,30 @@
-type Bounds = {
-  top?: Number;
-  left?: Number;
-  width?: Number;
-  height?: Number;
+interface ITransform {
+  rotate: { x: number, y: number, z: number };
+  translate: { x: number, y: number, z: number };
+  scale: { x: number, y: number, z: number };  
+  matrix: number[];
 };
 
-export type FlippingOptions = {
-  getDelta?: (Bounds) => Bounds,
-  getBounds?: (Element) => Bounds,
-  selector?: <T>() => T,
-  onFlip?: (state: FlipState, done?: Function) => any,
-  onRead?: (state: ReadState) => void,
+interface IBounds {
+  top?: number;
+  left?: number;
+  width?: number;
+  height?: number;
+  transform?: string;
+};
+
+export interface IFlippingOptions {
+  getDelta?: (Bounds) => IBounds;
+  getBounds?: (Element) => IBounds;
+  selector?: <T>() => T;
+  onFlip?: (state: IFlipState, done?: Function) => any;
+  onRead?: (state: IReadState) => void;
   getKey?: () => string;
 };
 
 const identity: <T>(arg: T) => T = a => a;
 
-const rect = (node: Element): Bounds => {
+const rect = (node: Element): IBounds => {
   const {
     top,
     left,
@@ -24,7 +32,13 @@ const rect = (node: Element): Bounds => {
     height,
   } = node.getBoundingClientRect();
   
-  return { top, left, width, height };
+  return {
+    top,
+    left,
+    width,
+    height,
+    transform: getComputedStyle(node).transform
+  };
 }
 
 function forEach(array: ArrayLike<any>, callback: Function): void {
@@ -33,35 +47,37 @@ function forEach(array: ArrayLike<any>, callback: Function): void {
   }
 }
 
-type FlipState = {
-  key: string,
-  node: Element,
-  first: Bounds,
-  last: Bounds,
-  delta: Bounds,
-  type: 'ENTER' | 'MOVE' | 'LEAVE',
-  animation: any,
+export interface IFlipState {
+  key: string;
+  node: Element;
+  first: IBounds;
+  last: IBounds;
+  delta: IBounds;
+  type: 'ENTER' | 'MOVE' | 'LEAVE';
+  animation: any;
+  previous?: IFlipState;
+  start: number;
 };
 
-type ReadState = {
-  key: string,
-  node: Element,
-  bounds: Bounds,
-  animation: any,
+interface IReadState {
+  key: string;
+  node: Element;
+  bounds: IBounds;
+  animation: any;
 };
 
-type ListenerDict<T> = {
+interface IListenerDict<T> {
   [key: string]: (state: T) => void;
 };
 
-function getDelta(a: Bounds, b: Bounds): Bounds {
+function getDelta(a: IBounds, b: IBounds): IBounds {
   if (!a.height) { return a };
   if (!b.height) { return b };
   return {
-    top: <number>a.top - <number>b.top,
-    left: <number>a.left - <number>b.left,
-    width: <number>a.width / <number>b.width,
-    height: <number>a.height / <number>b.height,
+    top: a.top - b.top,
+    left: a.left - b.left,
+    width: a.width / b.width,
+    height: a.height / b.height,
   };
 }
 
@@ -69,27 +85,34 @@ const selector = (parentNode: Element): NodeListOf<Element> =>
   parentNode.querySelectorAll('[data-key]');
 const getKey = (node: Element): string =>
   node.getAttribute('data-key');
-const deltaChanged = (delta: Bounds): boolean => {
+const deltaChanged = (delta: IBounds): boolean => {
   return !!delta.top
     || !!delta.left
     || (delta.width !== 1)
     || (delta.height !== 1);
 };
+const boundsChanged = (a: IBounds, b: IBounds): boolean => {
+  return !!((a.top - b.top)
+    || (a.left - b.left)
+    || (a.width - b.width)
+    || (a.height - b.height));
+};
 
 class Flipping {
   selector: (Element) => NodeListOf<Element>;
-  getBounds: (Element) => Bounds;
-  getKey: (Element) => String;
-  getDelta: (first: Bounds, last: Bounds) => Bounds;
-  flipListeners: ListenerDict<FlipState>;
-  readListeners: ListenerDict<ReadState>;
-  bounds: { [key: string]: Bounds };
+  getBounds: (Element) => IBounds;
+  getKey: (Element) => string;
+  getDelta: (first: IBounds, last: IBounds) => IBounds;
+  flipListeners: IListenerDict<IFlipState>;
+  readListeners: IListenerDict<IReadState>;
+  bounds: { [key: string]: IBounds };
+  onFlip?: (state: IFlipState, done: Function) => any;
+  onRead?: (state: IReadState) => void;
   animations: { [key: string]: any };
-  onFlip?: (state: FlipState, done: Function) => any;
-  onRead?: (state: ReadState) => void;
+  states: {[key: string]: IFlipState};
   listeners: {[type: string]: Function[]};
 
-  constructor(options: FlippingOptions = {}) {
+  constructor(options: IFlippingOptions = {}) {
     this.selector = options.selector || selector;
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
@@ -102,12 +125,20 @@ class Flipping {
 
     this.bounds = {};
     this.animations = {};
+    this.states = {};
     this.listeners = {};
   }
-  on(type: string, handler: Function): void {
+  private getRelativeBounds(parentBounds: IBounds, childBounds: IBounds): IBounds {
+    return {
+      ...childBounds,
+      top: childBounds.top - parentBounds.top,
+      left: childBounds.left - parentBounds.left
+    };
+  }
+  public on(type: string, handler: Function): void {
     (this.listeners[type] || (this.listeners[type] = [])).push(handler);
   }
-  off(type: string, handler: Function): void {
+  public off(type: string, handler: Function): void {
     const listenersOfType = this.listeners[type];
     let index;
     if (!listenersOfType || (index = listenersOfType.indexOf(handler)) === -1) {
@@ -122,16 +153,17 @@ class Flipping {
 
     listenersOfType.forEach(handler => handler(event));
   }
-  read(parentNode: Element = document.documentElement) {
+  public read(parentNode: Element = document.documentElement) {
     let nodes: NodeList = this.selector(parentNode);
-    const fullState: {[key: string]: ReadState} = {};
+    const fullState: {[key: string]: IReadState} = {};
+    const parentBounds = this.getBounds(parentNode);
 
     forEach(nodes, (node) => {
       const key = <string>this.getKey(node);
-      const bounds = this.bounds[key] = this.getBounds(node);
+      const bounds = this.bounds[key] = this.getRelativeBounds(parentBounds, this.getBounds(node));
       const animation = this.animations[key];
 
-      const state: ReadState = {
+      const state: IReadState = {
         key,
         node,
         bounds,
@@ -145,15 +177,16 @@ class Flipping {
 
     this.emit('read', fullState);
   }
-  flip(parentNode: Element = document.documentElement) {
+  public flip(parentNode: Element = document.documentElement) {
     let nodes: NodeList = this.selector(parentNode);
-    const fullState: {[key: string]: FlipState} = {};
+    const fullState: {[key: string]: IFlipState} = {};
+    const parentBounds = this.getBounds(parentNode);
     let flipped = false;
 
     forEach(nodes, (node) => {
-      const key = <string>this.getKey(node);
+      const key = this.getKey(node);
       const first = this.bounds[key];
-      const last = this.getBounds(node);
+      const last = this.getRelativeBounds(parentBounds, this.getBounds(node));
       const animation = this.animations[key];
       const delta = this.getDelta(first, last)
 
@@ -161,25 +194,28 @@ class Flipping {
 
       flipped = true;
 
-      const state: FlipState = {
+      const state: IFlipState = {
         key,
         node,
         first,
         last,
         delta: this.getDelta(first, last),
         type: !first ? 'ENTER' : !last ? 'LEAVE' : 'MOVE',
+        start: Date.now(),
         animation,
+        previous: this.states[key],
       };
 
       const nextAnimation = this.onFlip(state, () => this.read(parentNode));
 
+      this.states[key] = state;
       fullState[key] = {...state, animation: nextAnimation};
       this.animations[key] = nextAnimation;
     });
 
     if (flipped) this.emit('flip', fullState);
   }
-  wrap(fn: Function): Function {
+  public wrap(fn: Function): Function {
     return (...args) => {
       this.read();
       const result = fn(...args);

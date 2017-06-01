@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "eases": "^1.0.8",
+    "rematrix": "^0.1.0",
     "zen-observable": "^0.5.1"
   }
 }

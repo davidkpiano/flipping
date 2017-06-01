@@ -1,6 +1,7 @@
-import Flipping, { FlippingOptions } from './Flipping';
+import Flipping, { IFlippingOptions } from './Flipping';
 import * as sineInOut from 'eases/sine-in-out';
 import * as Observable from 'zen-observable/index.js';
+import * as Rematrix from 'rematrix';
 
 const now = Date.now;
 const identity = a => a;
@@ -36,8 +37,7 @@ type AnimationFrameTiming = {
   easing?: Function;
 };
 
-const animationFrameOnFlip = (timingOptions: AnimationFrameTiming) => ({ delta, node }, done) => {
-  const start = now();
+const animationFrameOnFlip = (timingOptions: AnimationFrameTiming) => ({ delta, last, node, start }, done) => {
   const easing: Function = timingOptions.easing || sineInOut;
   const offset$ = animationFrames(timingOptions.duration);
 
@@ -47,20 +47,30 @@ const animationFrameOnFlip = (timingOptions: AnimationFrameTiming) => ({ delta, 
 
       const x = delta.left - delta.left * Math.sin(offsetRad);
       const y = delta.top * Math.cos(offsetRad);
+      const width = (1 - delta.width) * easeOffset + delta.width;
+      const height = (1 - delta.height) * easeOffset + delta.height;
 
-      node.style.setProperty('transform', `translate(${x}px, ${y}px)`);
+      const translate = Rematrix.translate(x, y);
+      const scale = Rematrix.scale(width, height);
+      const invertedMatrix = [
+        Rematrix.parse(last.transform),
+        translate,
+        scale
+      ].reduce(Rematrix.multiply).join(',');
+
+      node.style.setProperty('transform', `matrix3d(${invertedMatrix})`);
     },
     () => { identity },
     () => {
-      node.style.setProperty('transform', 'none');
+      node.style.removeProperty('transform');
       done();
     });
 
   return animation;
 }
 
-const animationFrameOnRead = ({animation, node}) => {
-  node.style.setProperty('transform', 'none');
+const animationFrameOnRead = ({animation, node, bounds}) => {
+  node.style.removeProperty('transform');
   animation && animation.unsubscribe();
 }
 
@@ -70,7 +80,7 @@ const defaultTiming = {
 };
 
 class FlippingWeb extends Flipping {
-  constructor(options: FlippingOptions & AnimationFrameTiming) {
+  constructor(options: IFlippingOptions & AnimationFrameTiming) {
     const timingOptions: AnimationFrameTiming = {
       duration: options.duration || defaultTiming.duration,
       easing: options.easing || defaultTiming.easing
