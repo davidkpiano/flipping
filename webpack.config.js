@@ -23,6 +23,7 @@ module.exports = {
     loaders: [
       { test: /\.tsx?$/, loader: 'awesome-typescript-loader' }
     ]
-  }
+  },
+  devtool: 'inline-source-map',
 };
 

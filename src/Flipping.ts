@@ -15,12 +15,32 @@ interface IBounds {
 
 export interface IFlippingOptions {
   getDelta?: (Bounds) => IBounds;
-  getBounds?: (Element) => IBounds;
+  getBounds?: (node: Element) => IBounds;
   selector?: <T>() => T;
   onFlip?: (state: IFlipState, done?: Function) => any;
   onRead?: (state: IReadState) => void;
   getKey?: () => string;
 };
+
+export interface IFlipNodeMode {
+  height?: number;
+  width?: number;
+  from: {
+    x?: number;
+    y?: number;
+    [key: string]: string | number;
+  };
+  to: {
+    x?: number;
+    y?: number;
+    [key: string]: string | number;
+  };
+};
+
+export interface IFlipNodesMode {
+  node: IFlipNodeMode;
+  container?: IFlipNodeMode;
+}
 
 const identity: <T>(arg: T) => T = a => a;
 
@@ -39,6 +59,32 @@ const rect = (node: Element): IBounds => {
     height,
     transform: getComputedStyle(node).transform
   };
+}
+
+const debugRect = (rect: IBounds, message?: string, color: string = 'red'): void => {
+  const overlay = document.getElementById('flip-overlay');
+  if (!overlay) return;
+
+  const r = document.createElement('div');
+  r.setAttribute('data-rect', message || '');
+
+  r.style.left = `${rect.left}px`;
+  r.style.top = `${rect.top}px`;
+  r.style.width = `${rect.width}px`;
+  r.style.height = `${rect.height}px`;
+  r.style.outline = `1px solid ${color}`;
+
+  overlay.appendChild(r);
+
+  setTimeout(() => overlay.removeChild(r), 10000);
+
+  console.log(rect, message);
+}
+
+function isHidden(node: Element) {
+  const { width, height } = rect(node);
+
+  return width === 0 && height === 0;
 }
 
 function forEach(array: ArrayLike<any>, callback: Function): void {
@@ -71,6 +117,7 @@ interface IListenerDict<T> {
 };
 
 function getDelta(a: IBounds, b: IBounds): IBounds {
+  if (!a) return { top: 0, left: 0, width: 1, height: 1 };
   if (!a.height) { return a };
   if (!b.height) { return b };
   return {
@@ -81,8 +128,18 @@ function getDelta(a: IBounds, b: IBounds): IBounds {
   };
 }
 
-const selector = (parentNode: Element): NodeListOf<Element> =>
-  parentNode.querySelectorAll('[data-key]');
+const selector = (parentNode: Element): Element[] => {
+  const nodes = parentNode.querySelectorAll('[data-key]');
+  const visibleNodes = {}
+
+  forEach(nodes, node => {
+    if (isHidden(node)) return;
+    const key = node.getAttribute('data-key');
+    visibleNodes[key] = node;
+  })
+
+  return Object.keys(visibleNodes).map(key => visibleNodes[key]);
+}
 const getKey = (node: Element): string =>
   node.getAttribute('data-key');
 const deltaChanged = (delta: IBounds): boolean => {
@@ -99,7 +156,7 @@ const boundsChanged = (a: IBounds, b: IBounds): boolean => {
 };
 
 class Flipping {
-  selector: (Element) => NodeListOf<Element>;
+  selector: (Element) => Element[];
   getBounds: (Element) => IBounds;
   getKey: (Element) => string;
   getDelta: (first: IBounds, last: IBounds) => IBounds;
@@ -154,7 +211,7 @@ class Flipping {
     listenersOfType.forEach(handler => handler(event));
   }
   public read(parentNode: Element = document.documentElement) {
-    let nodes: NodeList = this.selector(parentNode);
+    const nodes = this.selector(parentNode);
     const fullState: {[key: string]: IReadState} = {};
     const parentBounds = this.getBounds(parentNode);
 
@@ -162,6 +219,8 @@ class Flipping {
       const key = <string>this.getKey(node);
       const bounds = this.bounds[key] = this.getRelativeBounds(parentBounds, this.getBounds(node));
       const animation = this.animations[key];
+
+      debugRect(bounds, key);
 
       const state: IReadState = {
         key,
@@ -178,7 +237,7 @@ class Flipping {
     this.emit('read', fullState);
   }
   public flip(parentNode: Element = document.documentElement) {
-    let nodes: NodeList = this.selector(parentNode);
+    const nodes = this.selector(parentNode);
     const fullState: {[key: string]: IFlipState} = {};
     const parentBounds = this.getBounds(parentNode);
     let flipped = false;
@@ -188,9 +247,12 @@ class Flipping {
       const first = this.bounds[key];
       const last = this.getRelativeBounds(parentBounds, this.getBounds(node));
       const animation = this.animations[key];
-      const delta = this.getDelta(first, last)
 
-      if (!deltaChanged(delta)) return;
+      debugRect(this.getBounds(node), key, 'green');
+
+      console.log(key, first, last);
+
+      // if (!deltaChanged(delta)) return;
 
       flipped = true;
 
@@ -223,6 +285,8 @@ class Flipping {
       return result;
     }
   }
+  static debug = debugRect;
+  static rect = rect;
 }
 
 export default Flipping;

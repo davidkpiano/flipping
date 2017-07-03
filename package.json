@@ -7,7 +7,7 @@
     "start": "npm run build:watch",
     "test": "mocha -r ts-node/register test/**.test.ts",
     "build:prod": "webpack -p --config webpack.config.prod.js",
-    "build:watch": "webpack --config webpack.config.prod.js -w",
+    "build:watch": "webpack --config webpack.config.js -w",
     "prepublish": "npm run build:prod"
   },
   "repository": {
@@ -26,9 +26,11 @@
   "homepage": "https://github.com/davidkpiano/flipping#readme",
   "devDependencies": {
     "awesome-typescript-loader": "^3.1.2",
+    "babel-core": "^6.25.0",
     "chai": "^3.5.0",
     "gsap": "^1.19.1",
     "mocha": "^3.2.0",
+    "prettier": "^1.4.4",
     "ts-loader": "^2.0.2",
     "ts-node": "^3.0.2",
     "typescript": "^2.2.1",
