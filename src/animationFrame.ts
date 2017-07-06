@@ -137,9 +137,7 @@ const scaleAnimation = (
       `
       );
     },
-    () => {
-      identity;
-    },
+    () => identity,
     () => {
       unstyle(node);
     }
@@ -151,7 +149,9 @@ const scaleAnimation = (
 const animationFrameOnRead = ({ animation, node, bounds }) => {
   node.setAttribute('style', '');
   (node.parentNode as HTMLElement).setAttribute('style', '');
-  animation && animation.unsubscribe();
+  if (animation) {
+    animation.unsubscribe();
+  }
 };
 
 const defaultTiming = {

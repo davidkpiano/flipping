@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build:watch",
     "test": "mocha -r ts-node/register test/**.test.ts",
-    "build:prod": "webpack -p --config webpack.config.prod.js",
+    "build:prod": "webpack --config webpack.config.prod.js",
     "build:watch": "webpack --config webpack.config.js -w",
     "prepublish": "npm run build:prod"
   },
@@ -31,8 +31,9 @@
     "gsap": "^1.19.1",
     "mocha": "^3.2.0",
     "prettier": "^1.4.4",
-    "ts-loader": "^2.0.2",
+    "ts-loader": "^2.2.2",
     "ts-node": "^3.0.2",
+    "tslint": "^5.5.0",
     "typescript": "^2.2.1",
     "webpack": "^2.3.2"
   },
