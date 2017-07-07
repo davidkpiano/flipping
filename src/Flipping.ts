@@ -50,7 +50,7 @@ export interface IFlipNodesMode {
 
 export interface IFlipState {
   key: string;
-  node: Element;
+  node: Element | undefined;
   first: IBounds;
   last: IBounds;
   delta: IBounds;
@@ -85,7 +85,9 @@ const rect = (node: Element): IBounds => {
   };
 };
 
-const FOLLOW_ATTR = 'data-follow';
+const FOLLOW_ATTR = 'data-flip-follow';
+const KEY_ATTR = 'data-flip-key';
+const WRAP_ATTR = 'data-flip-wrap';
 
 function isHidden(node: Element) {
   const { width, height } = rect(node);
@@ -99,9 +101,11 @@ function forEach(array: ArrayLike<any>, callback: Function): void {
   }
 }
 
+const NO_DELTA: IBounds = { top: 0, left: 0, width: 1, height: 1 };
+
 function getDelta(a: IBounds, b: IBounds): IBounds {
   if (!a) {
-    return { top: 0, left: 0, width: 1, height: 1 };
+    return NO_DELTA;
   }
   if (!a.height) {
     return a;
@@ -118,20 +122,20 @@ function getDelta(a: IBounds, b: IBounds): IBounds {
 }
 
 const selector = (parentNode: Element): Element[] => {
-  const nodes = parentNode.querySelectorAll('[data-key]');
+  const nodes = parentNode.querySelectorAll(`[${KEY_ATTR}]`);
   const visibleNodes = {};
 
   forEach(nodes, node => {
     if (isHidden(node)) {
       return;
     }
-    const key = node.getAttribute('data-key');
+    const key = node.getAttribute(KEY_ATTR);
     visibleNodes[key] = node;
   });
 
   return Object.keys(visibleNodes).map(key => visibleNodes[key]);
 };
-const getKey = (node: Element): string => node.getAttribute('data-key');
+const getKey = (node: Element): string => node.getAttribute(KEY_ATTR);
 const deltaChanged = (delta: IBounds): boolean => {
   return !!delta.top || !!delta.left || delta.width !== 1 || delta.height !== 1;
 };
@@ -240,6 +244,7 @@ class Flipping {
     const fullState: { [key: string]: IFlipState } = {};
     const parentBounds = this.getBounds(parentNode);
     let flipped = false;
+    const visited = {};
 
     forEach(nodes, node => {
       const key = this.getKey(node);
@@ -247,6 +252,7 @@ class Flipping {
       const last = this.getRelativeBounds(parentBounds, this.getBounds(node));
       const animation = this.animations[key];
 
+      visited[key] = true;
       flipped = true;
 
       const state: IFlipState = {
@@ -264,11 +270,36 @@ class Flipping {
       this.states[key] = fullState[key] = state;
     });
 
+    Object.keys(this.states).forEach(key => {
+      if (visited[key]) {
+        return;
+      }
+
+      this.states[key] = fullState[key] = {
+        key,
+        node: undefined,
+        first: this.bounds[key],
+        last: this.bounds[key],
+        delta: NO_DELTA,
+        type: 'LEAVE',
+        start: Date.now(),
+        animation: undefined,
+        previous: this.states[key]
+      };
+
+      delete this.bounds[key];
+    });
+
     Object.keys(fullState).forEach(key => {
       const state = fullState[key];
+      const node = state.node || state.previous.node;
 
-      if (state.type === 'ENTER' && state.node.getAttribute(FOLLOW_ATTR)) {
-        state.delta = fullState[state.node.getAttribute(FOLLOW_ATTR)].delta;
+      if (node) {
+        const followKey = node.getAttribute(FOLLOW_ATTR);
+
+        if ((state.type === 'ENTER' || state.type === 'LEAVE') && followKey) {
+          state.delta = fullState[followKey].delta;
+        }
       }
 
       const nextAnimation = this.onFlip(state, key, fullState);
@@ -285,11 +316,11 @@ class Flipping {
   public animate(key: string, animation: any): void {
     this.animations[key] = animation;
   }
-  public wrap(fn: Function): Function {
+  public wrap(fn: Function, parentNode?: Element): Function {
     return (...args) => {
-      this.read();
+      this.read(parentNode);
       const result = fn(...args);
-      this.flip();
+      this.flip(parentNode);
       return result;
     };
   }

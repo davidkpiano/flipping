@@ -45,14 +45,14 @@ body, html {
   z-index: 99
 }
 
-[data-key] {
+[data-flip-key] {
   width: 4rem;
   height: 4rem;
   outline: 1px solid blue;
   display: inline-block;
 }
 
-[data-key].active {
+[data-flip-key].active {
   /*width: 8rem;
   height: 8rem;*/
   position: absolute;
@@ -74,7 +74,7 @@ body, html {
   flex-wrap: wrap-reverse;
 }
 
-.layer + .layer [data-key] {
+.layer + .layer [data-flip-key] {
   border: 1rem solid blue;
 }
 
@@ -93,18 +93,18 @@ body, html {
 <body>
   <div class="layer active">
     <div class="boxes">
-      <div data-key="1" style="background-color:red">A</div>
-      <div data-key="2">C</div>
-      <div data-key="3">D</div>
-      <div data-key="4">B</div>
+      <div data-flip-key="1" style="background-color:red">A</div>
+      <div data-flip-key="2">C</div>
+      <div data-flip-key="3">D</div>
+      <div data-flip-key="4">B</div>
     </div>
   </div>
   <div class="layer">  
     <div class="boxes">
-      <div data-key="2">C</div>
-      <div data-key="1" style="background-color:red">A</div>
-      <div data-key="4">B</div>
-      <div data-key="3">D</div>
+      <div data-flip-key="2">C</div>
+      <div data-flip-key="1" style="background-color:red">A</div>
+      <div data-flip-key="4">B</div>
+      <div data-flip-key="3">D</div>
     </div>
   </div>
 </body>
@@ -114,11 +114,11 @@ body, html {
 
 <script>
   window.flipFoo = new Flipping({
-    selector: () => document.querySelectorAll('.layer.active [data-key]'),  
+    selector: () => document.querySelectorAll('.layer.active [data-flip-key]'),  
     duration: 3000,  
   });
   // window.flipFoo = new Flipping({
-  //   selector: () => document.querySelectorAll('.layer.active [data-key]'),
+  //   selector: () => document.querySelectorAll('.layer.active [data-flip-key]'),
   //   onRead: (({ animation }) => {
   //     if (animation) {
   //       animation.progress(1).kill();
@@ -139,7 +139,7 @@ body, html {
   // });
 
 
-  const boxes = document.querySelectorAll('[data-key]');
+  const boxes = document.querySelectorAll('[data-flip-key]');
 
   boxes.forEach(box => {
     box.addEventListener('click', flipFoo.wrap(() => {

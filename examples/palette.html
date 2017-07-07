@@ -54,13 +54,13 @@
 </head>
 <body>
   <!--<div class="boxes">
-    <div class="box" data-key="0" style="color: #9DD1F9"></div>
-    <div class="box" data-key="1" style="color: #2B95E7"></div>
-    <div class="box" data-key="2" style="color: #A534B8"></div>
-    <div class="box" data-key="3" style="color: #73BEF5"></div>
-    <div class="box" data-key="4" style="color: #2382D5"></div>
+    <div class="box" data-flip-key="0" style="color: #9DD1F9"></div>
+    <div class="box" data-flip-key="1" style="color: #2B95E7"></div>
+    <div class="box" data-flip-key="2" style="color: #A534B8"></div>
+    <div class="box" data-flip-key="3" style="color: #73BEF5"></div>
+    <div class="box" data-flip-key="4" style="color: #2382D5"></div>
   </div>-->
-  <div class="foo" data-key="foo"></div>
+  <div class="foo" data-flip-key="foo"></div>
   <div class="bar"></div>
 </body>
 <script src="../dist/flipping.animationFrame.js"></script>
@@ -75,13 +75,13 @@
     [[0, 1], [1, 2], [2, 5], [3, 15], [14, 20]],    
   ]
   window.flipFoo = new Flipping({
-    selector: () => document.querySelectorAll('[data-key]'),  
+    selector: () => document.querySelectorAll('[data-flip-key]'),  
     duration: 300,  
   });
   
   // let index = 0;
 
-  // const boxes = document.querySelectorAll('[data-key]');
+  // const boxes = document.querySelectorAll('[data-flip-key]');
 
   // document.body.addEventListener('click', flipFoo.wrap(() => {
   //   const state = states[index];

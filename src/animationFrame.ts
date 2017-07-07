@@ -106,7 +106,7 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
 };
 
 const scaleAnimation = (
-  { delta, last, node, start, type },
+  { delta, last, node, start, type }: IFlipState,
   timingOptions: AnimationFrameTiming
 ) => {
   const easing: Function = timingOptions.easing || sineInOut;
@@ -155,14 +155,18 @@ const animationFrameOnRead = ({ animation, node, bounds }) => {
 };
 
 const defaultTiming = {
-  duration: 3000,
+  duration: 300,
   easing: quadOut
 };
 
-const getFlipAnimation = options => (state: IFlipState) => {
+const strategyAnimation = (state: IFlipState, options) => {
   const { node } = state;
 
-  if (node.parentElement.hasAttribute('data-flip-wrap')) {
+  if (
+    node &&
+    node.parentElement &&
+    node.parentElement.hasAttribute('data-flip-wrap')
+  ) {
     return slidingLayersAnimation(state, options);
   }
 
@@ -170,6 +174,12 @@ const getFlipAnimation = options => (state: IFlipState) => {
 };
 
 class FlippingAnimationFrame extends Flipping {
+  static animate = {
+    default: strategyAnimation,
+    transform: scaleAnimation,
+    slidingLayers: slidingLayersAnimation
+  };
+
   constructor(options: IFlippingOptions & AnimationFrameTiming = {}) {
     const timingOptions: AnimationFrameTiming = {
       duration: options.duration || defaultTiming.duration,
@@ -178,7 +188,8 @@ class FlippingAnimationFrame extends Flipping {
 
     super({
       onRead: animationFrameOnRead,
-      onFlip: getFlipAnimation(timingOptions),
+      onFlip: state =>
+        FlippingAnimationFrame.animate.default(state, timingOptions),
       getBounds: node => {
         const bounds = Flipping.rect(node);
 

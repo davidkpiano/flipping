@@ -77,7 +77,7 @@ const scaleAnimation = (state: IFlipState, options): any => {
     scale
   );
 
-  return (node as any).animate(
+  return node.animate(
     [
       {
         transformOrigin: 'top left',
@@ -95,7 +95,15 @@ const scaleAnimation = (state: IFlipState, options): any => {
 const strategyAnimation = (state: IFlipState, options): any => {
   const { node } = state;
 
-  if (node.parentElement.hasAttribute('data-flip-wrap')) {
+  if (!node) {
+    return;
+  }
+
+  if (
+    node &&
+    node.parentElement &&
+    node.parentElement.hasAttribute('data-flip-wrap')
+  ) {
     return slidingLayersAnimation(state, options);
   }
 
