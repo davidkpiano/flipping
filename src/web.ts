@@ -1,57 +1,45 @@
-import Flipping, {
-  IFlippingOptions,
-  IFlipState,
-  FlipIteratee
-} from './Flipping';
-import { slide as slideMode } from './modes/slide';
-import { position as positionMode } from './modes/position';
-import { matrixTranslate, matrixScale, matrixMultiply } from './utils';
-import * as Rematrix from 'rematrix';
+import Flipping, { IFlippingOptions, IFlipState } from './Flipping';
+import * as modes from './modes';
+// import { matrixMultiply } from './utils';
+// import * as Rematrix from 'rematrix';
 
 const slidingLayersAnimation = (state: IFlipState, options): any => {
-  const { delta, node, previous, first, last } = state;
-  const mode = slideMode(state);
-  const containerFrom = matrixTranslate(
-    mode.container.from.x,
-    mode.container.from.y
-  );
-  const containerTo = matrixTranslate(mode.container.to.x, mode.container.to.y);
-  const nodeFrom = matrixTranslate(mode.node.from.x, mode.node.from.y);
-  const nodeTo = matrixTranslate(mode.node.to.x, mode.node.to.y);
+  const { node } = state;
+  const mode = modes.slide(state);
 
-  const nodeAnim = (node as any).animate(
+  const nodeAnim = node.animate(
     [
       {
-        height: `${mode.container.height}px`,
-        width: `${mode.container.width}px`,
-        transformOrigin: 'top left',
-        transform: `matrix3d(${nodeFrom})`
+        height: `${mode.node.from.height}px`,
+        width: `${mode.node.from.width}px`,
+        transformOrigin: mode.node.from.transformOrigin,
+        transform: mode.node.from.transform
       },
       {
-        height: `${mode.container.height}px`,
-        width: `${mode.container.width}px`,
-        transformOrigin: 'top left',
-        transform: `matrix3d(${nodeTo})`
+        height: `${mode.node.to.height}px`,
+        width: `${mode.node.to.width}px`,
+        transformOrigin: mode.node.to.transformOrigin,
+        transform: mode.node.to.transform
       }
     ],
     options
   );
 
-  const containerAnim = (node.parentNode as any).animate(
+  const containerAnim = node.parentElement.animate(
     [
       {
         willChange: 'transform',
-        height: `${mode.container.height}px`,
-        width: `${mode.container.width}px`,
-        transformOrigin: 'top left',
-        transform: `matrix3d(${containerFrom})`
+        height: `${mode.container.from.height}px`,
+        width: `${mode.container.from.width}px`,
+        transformOrigin: mode.container.from.transformOrigin,
+        transform: mode.container.from.transform
       },
       {
         willChange: 'transform',
-        height: `${mode.container.height}px`,
-        width: `${mode.container.width}px`,
-        transformOrigin: 'top left',
-        transform: `matrix3d(${containerTo})`
+        height: `${mode.container.to.height}px`,
+        width: `${mode.container.to.width}px`,
+        transformOrigin: mode.container.to.transformOrigin,
+        transform: mode.container.to.transform
       }
     ],
     options
@@ -65,31 +53,57 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
   };
 };
 
-const scaleAnimation = (state: IFlipState, options): any => {
-  const { delta, node, previous, first, last } = state;
-  const translate = Rematrix.translate(delta.left, delta.top);
+const scaleAnimation = (state: IFlipState, options: any = {}): any => {
+  const { node } = state;
+  const mode = modes.scale(state);
 
-  const scale = Rematrix.scale(delta.width, delta.height);
-
-  const invertedMatrix = matrixMultiply(
-    Rematrix.parse(last.transform),
-    translate,
-    scale
-  );
-
-  return node.animate(
+  const nodeAnim = node.animate(
     [
       {
-        transformOrigin: 'top left',
-        transform: `matrix3d(${invertedMatrix})`
+        transformOrigin: mode.node.from.transformOrigin || 'inherit',
+        transform: mode.node.from.transform
       },
       {
-        transformOrigin: 'top left',
-        transform: last.transform
+        transformOrigin: mode.node.to.transformOrigin || 'inherit',
+        transform: mode.node.to.transform
       }
     ],
     options
   );
+
+  // if (options.crossFade && previous && previous.node) {
+  //   const matrix = matrixMultiply(
+  //     Rematrix.parse(first.transform),
+  //     Rematrix.translate(-1 * delta.left, -1 * delta.top),
+  //     Rematrix.scale(1 / delta.width, 1 / delta.height)
+  //   );
+  //   const prevNodeAnim = previous.node.animate(
+  //     [
+  //       {
+  //         opacity: 1,
+  //         visibility: 'visible',
+  //         transformOrigin: 'top left',
+  //         transform: first.transform
+  //       },
+  //       {
+  //         opacity: 0,
+  //         visibility: 'hidden',
+  //         transformOrigin: 'top left',
+  //         transform: `matrix3d(${matrix})`
+  //       }
+  //     ],
+  //     options
+  //   );
+
+  //   return {
+  //     finish: () => {
+  //       nodeAnim.finish();
+  //       prevNodeAnim.finish();
+  //     }
+  //   };
+  // }
+
+  return nodeAnim;
 };
 
 const strategyAnimation = (state: IFlipState, options): any => {

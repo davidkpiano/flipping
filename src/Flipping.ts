@@ -1,10 +1,3 @@
-interface ITransform {
-  rotate: { x: number; y: number; z: number };
-  translate: { x: number; y: number; z: number };
-  scale: { x: number; y: number; z: number };
-  matrix: number[];
-}
-
 interface IBounds {
   top?: number;
   left?: number;
@@ -20,17 +13,18 @@ export type FlipIteratee = (
 ) => any;
 
 export interface IFlippingOptions {
+  active?: (element: Element) => boolean;
   getDelta?: (Bounds) => IBounds;
   getBounds?: (node: Element) => IBounds;
-  selector?: <T>() => T;
+  selector?: (parent: Element) => Element[];
   onFlip?: FlipIteratee;
-  onRead?: (state: IReadState) => void;
+  onRead?: (state: IFlipState) => void;
+  onEnter?: (state: IFlipState) => void;
+  onLeave?: (state: IFlipState) => void;
   getKey?: () => string;
 }
 
 export interface IFlipNodeMode {
-  height?: number;
-  width?: number;
   from: {
     x?: number;
     y?: number;
@@ -49,26 +43,15 @@ export interface IFlipNodesMode {
 }
 
 export interface IFlipState {
+  type: 'ENTER' | 'MOVE' | 'LEAVE';
   key: string;
   node: Element | undefined;
   first: IBounds;
   last: IBounds;
   delta: IBounds;
-  type: 'ENTER' | 'MOVE' | 'LEAVE';
   animation: any;
-  previous?: IFlipState;
+  previous: IFlipState | undefined;
   start: number;
-}
-
-interface IReadState {
-  key: string;
-  node: Element;
-  bounds: IBounds;
-  animation: any;
-}
-
-interface IListenerDict<T> {
-  [key: string]: (state: T) => void;
 }
 
 const identity: <T>(arg: T) => T = a => a;
@@ -87,18 +70,11 @@ const rect = (node: Element): IBounds => {
 
 const FOLLOW_ATTR = 'data-flip-follow';
 const KEY_ATTR = 'data-flip-key';
-const WRAP_ATTR = 'data-flip-wrap';
 
 function isHidden(node: Element) {
   const { width, height } = rect(node);
 
   return width === 0 && height === 0;
-}
-
-function forEach(array: ArrayLike<any>, callback: Function): void {
-  for (let i = 0; i < array.length; i++) {
-    callback(array[i], i, array);
-  }
 }
 
 const NO_DELTA: IBounds = { top: 0, left: 0, width: 1, height: 1 };
@@ -124,63 +100,74 @@ function getDelta(a: IBounds, b: IBounds): IBounds {
 const selector = (parentNode: Element): Element[] => {
   const nodes = parentNode.querySelectorAll(`[${KEY_ATTR}]`);
   const visibleNodes = {};
+  const result = [];
 
-  forEach(nodes, node => {
+  nodes.forEach(node => {
     if (isHidden(node)) {
       return;
     }
     const key = node.getAttribute(KEY_ATTR);
     visibleNodes[key] = node;
+
+    result.push(node);
   });
 
-  return Object.keys(visibleNodes).map(key => visibleNodes[key]);
+  // return Object.keys(visibleNodes).map(key => visibleNodes[key]);
+  return result;
 };
+const active = () => true;
 const getKey = (node: Element): string => node.getAttribute(KEY_ATTR);
-const deltaChanged = (delta: IBounds): boolean => {
-  return !!delta.top || !!delta.left || delta.width !== 1 || delta.height !== 1;
-};
-const boundsChanged = (a: IBounds, b: IBounds): boolean => {
-  return !!(
-    a.top - b.top ||
-    a.left - b.left ||
-    a.width - b.width ||
-    a.height - b.height
-  );
-};
+// const deltaChanged = (delta: IBounds): boolean => {
+//   return !!delta.top || !!delta.left || delta.width !== 1 || delta.height !== 1;
+// };
+// const boundsChanged = (a: IBounds, b: IBounds): boolean => {
+//   return !!(
+//     a.top - b.top ||
+//     a.left - b.left ||
+//     a.width - b.width ||
+//     a.height - b.height
+//   );
+// };
+
+interface IFlipStateMap {
+  [key: string]: IFlipState;
+}
+
+type FlipEventHandler = (
+  state: IFlipState,
+  key: string,
+  fullState: IFlipStateMap
+) => any;
 
 class Flipping {
-  selector: (Element) => Element[];
-  getBounds: (Element) => IBounds;
-  getKey: (Element) => string;
-  getDelta: (first: IBounds, last: IBounds) => IBounds;
-  flipListeners: IListenerDict<IFlipState>;
-  readListeners: IListenerDict<IReadState>;
-  bounds: { [key: string]: IBounds };
-  onFlip?: (
-    state: IFlipState,
-    key: string,
-    fullState: { [key: string]: IFlipState }
-  ) => any;
-  onRead?: (state: IReadState) => void;
-  animations: { [key: string]: any };
-  states: { [key: string]: IFlipState };
-  listeners: { [type: string]: Function[] };
+  public selector: (element: Element) => Element[];
+  public active: (element: Element) => boolean;
+  private selectActive: (element) => Element[];
+  public getBounds: (element: Element) => IBounds;
+  public getKey: (element: Element) => string;
+  public getDelta: (first: IBounds, last: IBounds) => IBounds;
+  public onFlip?: FlipEventHandler;
+  public onEnter?: FlipEventHandler;
+  public onLeave?: FlipEventHandler;
+  public onRead?: (state: IFlipState) => void;
+  public states: { [key: string]: IFlipState };
 
-  constructor(options: IFlippingOptions = {}) {
+  constructor(options: IFlippingOptions & { [key: string]: any } = {}) {
     this.selector = options.selector || selector;
+    this.active = options.active || active;
+    this.selectActive = (node: Element) =>
+      this.selector(node).filter(element => {
+        return this.active(element);
+      });
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
     this.getKey = options.getKey || getKey;
     this.onFlip = options.onFlip || identity;
     this.onRead = options.onRead || identity;
+    this.onEnter = options.onEnter || identity;
+    this.onLeave = options.onLeave || identity;
 
-    this.flipListeners = {};
-    this.readListeners = {};
-
-    this.bounds = {};
-    this.animations = {};
     this.states = {};
-    this.listeners = {};
   }
   private getRelativeBounds(
     parentBounds: IBounds,
@@ -192,82 +179,62 @@ class Flipping {
       left: childBounds.left - parentBounds.left
     };
   }
-  public on(type: string, handler: Function): void {
-    (this.listeners[type] || (this.listeners[type] = [])).push(handler);
-  }
-  public off(type: string, handler: Function): void {
-    const listenersOfType = this.listeners[type];
-    let index;
-    if (!listenersOfType || (index = listenersOfType.indexOf(handler)) === -1) {
-      return;
-    }
-
-    listenersOfType.splice(index, 1);
-  }
-  private emit(type: string, event: any) {
-    const listenersOfType = this.listeners[type];
-    if (!listenersOfType || !listenersOfType.length) {
-      return;
-    }
-
-    listenersOfType.forEach(handler => handler(event));
-  }
   public read(parentNode: Element = document.documentElement) {
-    const nodes = this.selector(parentNode);
-    const fullState: { [key: string]: IReadState } = {};
+    const nodes = this.selectActive(parentNode);
+    const fullState: IFlipStateMap = {};
     const parentBounds = this.getBounds(parentNode);
 
-    forEach(nodes, node => {
-      const key = <string>this.getKey(node);
-      const bounds = (this.bounds[key] = this.getRelativeBounds(
-        parentBounds,
-        this.getBounds(node)
-      ));
-      const animation = this.animations[key];
+    nodes.forEach(node => {
+      const key = this.getKey(node);
+      const bounds = this.getRelativeBounds(parentBounds, this.getBounds(node));
+      const prevState = this.states[key];
 
-      const state: IReadState = {
+      const state = {
+        type: prevState ? 'MOVE' : 'ENTER',
         key,
         node,
-        bounds,
-        animation
-      };
+        first: undefined,
+        last: bounds,
+        delta: undefined,
+        start: Date.now(),
+        animation: prevState ? prevState.animation : undefined,
+        previous: prevState
+      } as IFlipState;
 
-      fullState[key] = state;
+      this.states[key] = fullState[key] = state;
 
       this.onRead(state);
     });
-
-    this.emit('read', fullState);
   }
   public flip(parentNode: Element = document.documentElement) {
-    const nodes = this.selector(parentNode);
-    const fullState: { [key: string]: IFlipState } = {};
+    const nodes = this.selectActive(parentNode);
+    const fullState: IFlipStateMap = {};
     const parentBounds = this.getBounds(parentNode);
     let flipped = false;
     const visited = {};
 
-    forEach(nodes, node => {
+    nodes.forEach(node => {
       const key = this.getKey(node);
-      const first = this.bounds[key];
-      const last = this.getRelativeBounds(parentBounds, this.getBounds(node));
-      const animation = this.animations[key];
+      const state = this.states[key];
+      const isPresent = state && state.type !== 'LEAVE';
 
       visited[key] = true;
       flipped = true;
+      const last = this.getRelativeBounds(parentBounds, this.getBounds(node));
 
-      const state: IFlipState = {
+      const newState: IFlipState = {
+        type: isPresent ? 'MOVE' : 'ENTER',
         key,
         node,
-        first,
+        first: isPresent ? state.last : undefined,
         last,
-        delta: this.getDelta(first, last),
-        type: !first ? 'ENTER' : !last ? 'LEAVE' : 'MOVE',
+        delta: isPresent ? this.getDelta(state.last, last) : undefined,
         start: Date.now(),
-        animation,
-        previous: this.states[key]
+        animation: isPresent ? state.animation : undefined,
+        previous: state || undefined
       };
 
-      this.states[key] = fullState[key] = state;
+      this.states[key] = fullState[key] = newState;
     });
 
     Object.keys(this.states).forEach(key => {
@@ -275,24 +242,23 @@ class Flipping {
         return;
       }
 
+      const first = this.states[key].last;
+
       this.states[key] = fullState[key] = {
+        type: 'LEAVE',
         key,
         node: undefined,
-        first: this.bounds[key],
-        last: this.bounds[key],
-        delta: NO_DELTA,
-        type: 'LEAVE',
+        first,
+        last: undefined,
         start: Date.now(),
         animation: undefined,
         previous: this.states[key]
-      };
-
-      delete this.bounds[key];
+      } as IFlipState;
     });
 
     Object.keys(fullState).forEach(key => {
       const state = fullState[key];
-      const node = state.node || state.previous.node;
+      const node = state.node || (state.previous && state.previous.node);
 
       if (node) {
         const followKey = node.getAttribute(FOLLOW_ATTR);
@@ -308,18 +274,14 @@ class Flipping {
         this.animate(key, nextAnimation);
       }
     });
-
-    if (flipped) {
-      this.emit('flip', fullState);
-    }
   }
   public animate(key: string, animation: any): void {
-    this.animations[key] = animation;
+    this.states[key].animation = animation;
   }
   public wrap(fn: Function, parentNode?: Element): Function {
     return (...args) => {
       this.read(parentNode);
-      const result = fn(...args);
+      const result = fn.apply(null, args);
       this.flip(parentNode);
       return result;
     };

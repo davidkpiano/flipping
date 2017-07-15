@@ -114,7 +114,8 @@ body, html {
 
 <script>
   window.flipFoo = new Flipping({
-    selector: () => document.querySelectorAll('.layer.active [data-flip-key]'),  
+    // selector: () => document.querySelectorAll('.layer.active [data-flip-key]'),  
+    active: (node) => node.matches('.layer.active [data-flip-key]'),
     duration: 3000,  
   });
   // window.flipFoo = new Flipping({

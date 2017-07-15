@@ -1,8 +1,7 @@
 import Flipping, { IFlipState, IFlippingOptions } from './Flipping';
-import { slide as slideMode } from './modes/slide';
-import { matrixTranslate, matrixScale, matrixMultiply } from './utils';
+import * as modes from './modes';
+import { matrixTranslate } from './utils';
 import * as sineInOut from 'eases/sine-in-out';
-import * as quadIn from 'eases/quad-in';
 import * as quadOut from 'eases/quad-out';
 import * as Observable from 'zen-observable/index.js';
 import * as Rematrix from 'rematrix';
@@ -27,7 +26,7 @@ const animationFrames = (duration: number) =>
       }
     };
 
-    const unsubscribe = o => {
+    const unsubscribe = () => {
       ticking = false;
       observer.complete();
     };
@@ -52,15 +51,13 @@ type AnimationFrameTiming = {
 };
 
 const slidingLayersAnimation = (state: IFlipState, options): any => {
-  const { node, last } = state;
-  const mode = slideMode(state);
+  const { node } = state;
+  const mode = modes.slide(state);
   const offset$ = animationFrames(options.duration);
 
   const animation = offset$.subscribe(
     offset => {
       const easeOffset = (options.easing || sineInOut)(offset);
-      const qe = quadIn(offset);
-      const offsetRad = offset * Math.PI / 2;
 
       const containerDeltaLeft = mode.container.to.x - mode.container.from.x;
       const containerDeltaTop = mode.container.to.y - mode.container.from.y;
@@ -78,9 +75,9 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
       style(
         node,
         `
-        height: ${mode.container.height}px;
-        width: ${mode.container.width}px;
-        transform-origin: top left;
+        height: ${mode.node.from.height}px;
+        width: ${mode.node.from.width}px;
+        transform-origin: ${mode.node.from.transformOrigin};
         transform: matrix3d(${matrixTranslate(nodeX, nodeY)});
       `
       );
@@ -88,9 +85,9 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
       style(
         node.parentElement,
         `
-        height: ${mode.container.height}px;
-        width: ${mode.container.width}px;
-        transform-origin: top left;
+        height: ${mode.container.to.height}px;
+        width: ${mode.container.to.width}px;
+        transform-origin: ${mode.container.to.transformOrigin};
         transform: matrix3d(${matrixTranslate(containerX, containerY)});
       `
       );
@@ -106,7 +103,7 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
 };
 
 const scaleAnimation = (
-  { delta, last, node, start, type }: IFlipState,
+  { delta, last, node }: IFlipState,
   timingOptions: AnimationFrameTiming
 ) => {
   const easing: Function = timingOptions.easing || sineInOut;
@@ -146,7 +143,7 @@ const scaleAnimation = (
   return animation;
 };
 
-const animationFrameOnRead = ({ animation, node, bounds }) => {
+const animationFrameOnRead = ({ animation, node }) => {
   node.setAttribute('style', '');
   (node.parentNode as HTMLElement).setAttribute('style', '');
   if (animation) {

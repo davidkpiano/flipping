@@ -2,7 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "allowJs": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es2015", "dom.iterable"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "awesomeTypescriptLoaderOptions": {
     "useBabel": true,

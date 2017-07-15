@@ -1,9 +1,12 @@
 import * as Rematrix from 'rematrix';
 
-export function mapValues(object: object, iteratee: (value: any, key: string, object: object) => object): object {
+export function mapValues(
+  object: object,
+  iteratee: (value: any, key: string, object: object) => object
+): object {
   const result = {};
 
-  Object.keys(object || {}).forEach((key) => {
+  Object.keys(object || {}).forEach(key => {
     result[key] = iteratee(object[key], key, object);
   });
 
@@ -13,11 +16,11 @@ export function mapValues(object: object, iteratee: (value: any, key: string, ob
 export function mapTwoValues(a, b, iteratee) {
   const result = {};
 
-  Object.keys(a || {}).forEach((key) => {
+  Object.keys(a || {}).forEach(key => {
     result[key] = iteratee(a[key], b[key], key);
   });
 
-  return result; 
+  return result;
 }
 
 export function matrixTranslate(x, y) {
@@ -29,7 +32,7 @@ export function matrixScale(x, y) {
 }
 
 export function matrixMultiply(...matrices) {
-  return matrices.reduce(Rematrix.multiply).join(',');
+  return matrices.filter(a => !!a).reduce(Rematrix.multiply).join(',');
 }
 
 // (window as any).persistLayout = (node: Element): any[] => {
