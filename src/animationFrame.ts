@@ -1,4 +1,4 @@
-import Flipping, { IFlipState, IFlippingOptions } from './Flipping';
+import Flipping, { IFlipState, IFlippingConfig } from './Flipping';
 import * as modes from './modes';
 import { matrixTranslate } from './utils';
 import * as sineInOut from 'eases/sine-in-out';
@@ -103,7 +103,7 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
 };
 
 const scaleAnimation = (
-  { delta, last, node }: IFlipState,
+  { delta, bounds, node }: IFlipState,
   timingOptions: AnimationFrameTiming
 ) => {
   const easing: Function = timingOptions.easing || sineInOut;
@@ -122,7 +122,11 @@ const scaleAnimation = (
 
       const translate = Rematrix.translate(x, y);
       const scale = Rematrix.scale(width, height);
-      const invertedMatrix = [translate, scale, Rematrix.parse(last.transform)]
+      const invertedMatrix = [
+        translate,
+        scale,
+        Rematrix.parse(bounds.transform)
+      ]
         .reduce(Rematrix.multiply)
         .join(',');
 
@@ -177,7 +181,7 @@ class FlippingAnimationFrame extends Flipping {
     slidingLayers: slidingLayersAnimation
   };
 
-  constructor(options: IFlippingOptions & AnimationFrameTiming = {}) {
+  constructor(options: IFlippingConfig & AnimationFrameTiming = {}) {
     const timingOptions: AnimationFrameTiming = {
       duration: options.duration || defaultTiming.duration,
       easing: options.easing || defaultTiming.easing

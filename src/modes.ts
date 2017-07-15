@@ -3,7 +3,7 @@ import { matrixTranslate, matrixMultiply } from './utils';
 import * as Rematrix from 'rematrix';
 
 export const scale = (state: IFlipState): IFlipNodesMode => {
-  const { last, delta } = state;
+  const { bounds, delta } = state;
   const scaleChanged = delta.width !== 1 || delta.height !== 1;
   const translate = Rematrix.translate(delta.left, delta.top);
   const scale = scaleChanged
@@ -11,7 +11,7 @@ export const scale = (state: IFlipState): IFlipNodesMode => {
     : undefined;
   const transformOrigin = scaleChanged ? 'top left' : undefined;
   const invertedMatrix = matrixMultiply(
-    // Rematrix.parse(last.transform),
+    // Rematrix.parse(bounds.transform),
     translate,
     scale
   );
@@ -24,10 +24,10 @@ export const scale = (state: IFlipState): IFlipNodesMode => {
       transform: `matrix3d(${invertedMatrix})`
     },
     to: {
-      x: last.left,
-      y: last.top,
+      x: bounds.left,
+      y: bounds.top,
       transformOrigin,
-      transform: last.transform
+      transform: bounds.transform
     }
   };
 
@@ -37,10 +37,14 @@ export const scale = (state: IFlipState): IFlipNodesMode => {
 };
 
 export const slide = (state: IFlipState): IFlipNodesMode => {
-  const { delta, first, last } = state;
+  const { delta, previous, bounds } = state;
 
-  const height = Math.max(first.height, last.height);
-  const width = Math.max(first.width, last.width);
+  if (!previous) {
+    return;
+  }
+
+  const height = Math.max(previous.bounds.height, bounds.height);
+  const width = Math.max(previous.bounds.width, bounds.width);
 
   const nodePos: IFlipNodeMode = {
     from: {
@@ -67,8 +71,8 @@ export const slide = (state: IFlipState): IFlipNodesMode => {
     }
   };
 
-  const deltaWidth = last.width - first.width;
-  const deltaHeight = last.height - first.height;
+  const deltaWidth = bounds.width - previous.bounds.width;
+  const deltaHeight = bounds.height - previous.bounds.height;
 
   if (deltaWidth > 0) {
     containerPos.from.x = -deltaWidth + delta.left;

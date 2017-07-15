@@ -1,4 +1,4 @@
-import Flipping, { IFlippingOptions, IFlipState } from './Flipping';
+import Flipping, { IFlippingConfig, IFlipState } from './Flipping';
 import * as modes from './modes';
 // import { matrixMultiply } from './utils';
 // import * as Rematrix from 'rematrix';
@@ -130,7 +130,7 @@ const waapiOnRead = ({ animation }) => {
   }
 };
 
-const defaultOptions: IFlippingOptions & AnimationEffectTiming = {
+const defaultOptions: IFlippingConfig & AnimationEffectTiming = {
   duration: 300,
   easing: 'ease',
   fill: 'none',
@@ -159,7 +159,7 @@ class FlippingWeb extends Flipping {
     slidingLayers: slidingLayersAnimation
   };
 
-  constructor(options: IFlippingOptions & AnimationEffectTiming = {}) {
+  constructor(options: IFlippingConfig & AnimationEffectTiming = {}) {
     const optionsWithDefaults = {
       ...defaultOptions,
       ...options
