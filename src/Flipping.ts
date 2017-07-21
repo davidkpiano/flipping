@@ -51,13 +51,15 @@ export interface IFlipState {
   key: string;
   node: Element | undefined;
   bounds: IBounds;
-  delta: IBounds;
+  delta: IBounds | undefined;
   animation: any;
   previous: IFlipState | undefined;
   start: number;
 }
 
 const identity: <T>(arg: T) => T = a => a;
+
+const noop = () => {};
 
 const rect = (node: Element): IBounds => {
   const { top, left, width, height } = node.getBoundingClientRect();
@@ -165,10 +167,10 @@ class Flipping {
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
     this.getKey = options.getKey || getKey;
-    this.onFlip = options.onFlip || identity;
     this.onRead = options.onRead || identity;
-    this.onEnter = options.onEnter || identity;
-    this.onLeave = options.onLeave || identity;
+    this.onEnter = options.onEnter || noop;
+    this.onFlip = options.onFlip || noop;
+    this.onLeave = options.onLeave || noop;
 
     this.states = {};
   }
@@ -190,7 +192,7 @@ class Flipping {
   }
   public flip(
     parentNode: Element = document.documentElement,
-    options: IFlippingOptions
+    options: IFlippingOptions = {}
   ) {
     const nodes = this.selectActive(parentNode);
     const fullState: IFlipStateMap = {};
@@ -255,7 +257,11 @@ class Flipping {
         }
       }
 
-      const nextAnimation = this.onFlip(state, key, fullState);
+      const nextAnimation = {
+        ENTER: this.onEnter,
+        MOVE: this.onFlip,
+        LEAVE: this.onLeave
+      }[state.type].call(this, state, key, fullState);
 
       if (nextAnimation) {
         this.animate(key, nextAnimation);

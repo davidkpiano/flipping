@@ -154,7 +154,7 @@ const defaultOptions: IFlippingConfig & AnimationEffectTiming = {
 
 class FlippingWeb extends Flipping {
   static animate = {
-    default: strategyAnimation,
+    auto: strategyAnimation,
     transform: scaleAnimation,
     slidingLayers: slidingLayersAnimation
   };
@@ -167,7 +167,8 @@ class FlippingWeb extends Flipping {
 
     super({
       onRead: waapiOnRead,
-      onFlip: state => FlippingWeb.animate.default(state, optionsWithDefaults),
+      onEnter: state => FlippingWeb.animate.auto(state, optionsWithDefaults),
+      onFlip: state => FlippingWeb.animate.auto(state, optionsWithDefaults),
       ...optionsWithDefaults
     });
   }

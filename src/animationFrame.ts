@@ -176,7 +176,7 @@ const strategyAnimation = (state: IFlipState, options) => {
 
 class FlippingAnimationFrame extends Flipping {
   static animate = {
-    default: strategyAnimation,
+    auto: strategyAnimation,
     transform: scaleAnimation,
     slidingLayers: slidingLayersAnimation
   };
@@ -189,8 +189,10 @@ class FlippingAnimationFrame extends Flipping {
 
     super({
       onRead: animationFrameOnRead,
+      onEnter: state =>
+        FlippingAnimationFrame.animate.auto(state, timingOptions),
       onFlip: state =>
-        FlippingAnimationFrame.animate.default(state, timingOptions),
+        FlippingAnimationFrame.animate.auto(state, timingOptions),
       getBounds: node => {
         const bounds = Flipping.rect(node);
 
