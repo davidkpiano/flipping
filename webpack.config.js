@@ -6,8 +6,8 @@ var path = require('path');
 module.exports = {
   entry: {
     'flipping': './src/index',
-    'flipping.web': './src/web',
-    'flipping.animationFrame': './src/animationFrame',
+    'flipping.web': './src/strategies/web',
+    // 'flipping.animationFrame': './src/strategies/animationFrame',
   },
   output: {
     library: 'Flipping',

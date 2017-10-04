@@ -2,7 +2,7 @@ import * as Rematrix from 'rematrix';
 
 export function mapValues(
   object: object,
-  iteratee: (value: any, key: string, object: object) => object
+  iteratee: (value: any, key: string, object: object) => any
 ): object {
   const result = {};
 
@@ -33,6 +33,14 @@ export function matrixScale(x, y) {
 
 export function matrixMultiply(...matrices) {
   return matrices.filter(a => !!a).reduce(Rematrix.multiply).join(',');
+}
+
+export function styleValue(prop: string, value: string | number): string | number {
+  if (['height', 'width'].indexOf(prop) !== -1 && typeof value === 'number') {
+    return `${value}px`;
+  }
+
+  return value;
 }
 
 // (window as any).persistLayout = (node: Element): any[] => {

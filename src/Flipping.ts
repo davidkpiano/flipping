@@ -22,6 +22,7 @@ export interface IFlippingConfig {
   onEnter?: (state: IFlipState) => void;
   onLeave?: (state: IFlipState) => void;
   getKey?: () => string;
+  parent?: Element;
 }
 
 interface IFlippingOptions extends IFlippingConfig {
@@ -59,7 +60,7 @@ export interface IFlipState {
 
 const identity: <T>(arg: T) => T = a => a;
 
-const noop = () => {};
+const noop = () => { };
 
 const rect = (node: Element): IBounds => {
   const { top, left, width, height } = node.getBoundingClientRect();
@@ -156,6 +157,7 @@ class Flipping {
   public onLeave?: FlipEventHandler;
   public onRead?: (state: IFlipState) => void;
   public states: { [key: string]: IFlipState };
+  public parentElement: Element;
 
   constructor(options: IFlippingConfig & { [key: string]: any } = {}) {
     this.selector = options.selector || selector;
@@ -171,6 +173,7 @@ class Flipping {
     this.onEnter = options.onEnter || noop;
     this.onFlip = options.onFlip || noop;
     this.onLeave = options.onLeave || noop;
+    this.parentElement = options.parent || document.documentElement;
 
     this.states = {};
   }
@@ -185,18 +188,17 @@ class Flipping {
     };
   }
   public read(
-    parentNode: Element = document.documentElement,
     options: IFlippingOptions = {}
   ) {
-    this.flip(parentNode, { ...options, readOnly: true });
+    this.flip({ ...options, readOnly: true });
   }
   public flip(
-    parentNode: Element = document.documentElement,
     options: IFlippingOptions = {}
   ) {
-    const nodes = this.selectActive(parentNode);
+    const parentElement = options.parent || this.parentElement;
+    const nodes = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
-    const parentBounds = this.getBounds(parentNode);
+    const parentBounds = this.getBounds(parentElement);
     let flipped = false;
 
     nodes.forEach(node => {
@@ -273,13 +275,12 @@ class Flipping {
   }
   public wrap(
     fn: Function,
-    parentNode?: Element,
     options: IFlippingOptions = {}
   ): Function {
     return (...args) => {
-      this.read(parentNode);
+      this.read(options);
       const result = fn.apply(null, args);
-      this.flip(parentNode, options);
+      this.flip(options);
       return result;
     };
   }
