@@ -25,10 +25,12 @@
   },
   "homepage": "https://github.com/davidkpiano/flipping#readme",
   "devDependencies": {
+    "@types/gsap": "^1.19.1",
+    "@types/web-animations-js": "^2.2.4",
     "awesome-typescript-loader": "^3.1.2",
     "babel-core": "^6.25.0",
     "chai": "^3.5.0",
-    "gsap": "^1.19.1",
+    "gsap": "^1.20.3",
     "mocha": "^3.2.0",
     "prettier": "^1.4.4",
     "ts-loader": "^2.2.2",
@@ -38,7 +40,6 @@
     "webpack": "^2.3.2"
   },
   "dependencies": {
-    "@types/web-animations-js": "^2.2.4",
     "rematrix": "^0.1.0"
   }
 }

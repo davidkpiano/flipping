@@ -7,7 +7,7 @@ module.exports = {
   entry: {
     'flipping': './src/index',
     'flipping.web': './src/strategies/web',
-    // 'flipping.animationFrame': './src/strategies/animationFrame',
+    'flipping.gsap': './src/strategies/gsap',
   },
   output: {
     library: 'Flipping',
