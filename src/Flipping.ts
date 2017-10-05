@@ -54,6 +54,7 @@ export interface IFlipState {
   bounds: IBounds;
   delta: IBounds | undefined;
   animation: any;
+  index: number;
   previous: IFlipState | undefined;
   start: number;
 }
@@ -199,14 +200,18 @@ class Flipping {
     const nodes = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
     const parentBounds = this.getBounds(parentElement);
-    let flipped = false;
+    const config = {
+      onFlip: this.onFlip,
+      onEnter: this.onEnter,
+      onLeave: this.onLeave,
+      ...options
+    };
 
-    nodes.forEach(node => {
+    nodes.forEach((node, index) => {
       const key = this.getKey(node);
       const previous = this.states[key];
       const isPresent = previous && previous.type !== 'LEAVE';
 
-      flipped = true;
       const bounds = this.getRelativeBounds(parentBounds, this.getBounds(node));
 
       const newState: IFlipState = {
@@ -217,6 +222,7 @@ class Flipping {
         delta: isPresent ? this.getDelta(previous.bounds, bounds) : undefined,
         start: Date.now(),
         animation: isPresent ? previous.animation : undefined,
+        index,
         previous
       };
 
@@ -260,9 +266,9 @@ class Flipping {
       }
 
       const nextAnimation = {
-        ENTER: this.onEnter,
-        MOVE: this.onFlip,
-        LEAVE: this.onLeave
+        ENTER: config.onEnter,
+        MOVE: config.onFlip,
+        LEAVE: config.onLeave
       }[state.type].call(this, state, key, fullState);
 
       if (nextAnimation) {

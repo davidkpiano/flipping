@@ -20,13 +20,13 @@ export const scale = (state: IFlipState): IFlipNodesMode => {
     from: {
       x: delta.left,
       y: delta.top,
-      transformOrigin,
+      ...(transformOrigin ? { transformOrigin } : undefined),
       transform: `matrix3d(${invertedMatrix})`
     },
     to: {
       x: bounds.left,
       y: bounds.top,
-      transformOrigin,
+      ...(transformOrigin ? { transformOrigin } : undefined),
       transform: bounds.transform
     }
   };

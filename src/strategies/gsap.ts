@@ -1,6 +1,6 @@
 import Flipping, { IFlippingConfig, IFlipState, IFlipNodesMode } from '../Flipping';
 import * as animations from '../animations';
-import { mapValues, styleValue } from '../utils';
+import { mapValues, styleValue, getStaggerDelay } from '../utils';
 import * as GSAP from 'gsap';
 
 function animate(mode: IFlipNodesMode, nodeMap: Record<string, Element>, options): any {
@@ -10,7 +10,7 @@ function animate(mode: IFlipNodesMode, nodeMap: Record<string, Element>, options
       options.duration,
       mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
       mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value))
-    );
+    ).delay(options.delay);
   });
 
   return {
@@ -43,6 +43,12 @@ const scaleAnimation = (state: IFlipState, options: any = {}): any => {
 const autoAnimation = (state: IFlipState, options): any => {
   const { node } = state;
 
+  const timingOptions = {
+    ...options,
+    duration: (options.duration || 0) / 1000,
+    delay: +((options.delay || 0) + getStaggerDelay(state.index, options.stagger)) / 1000
+  }
+
   if (!node) {
     return;
   }
@@ -52,10 +58,10 @@ const autoAnimation = (state: IFlipState, options): any => {
     node.parentElement &&
     node.parentElement.hasAttribute('data-flip-wrap')
   ) {
-    return slidingLayersAnimation(state, options);
+    return slidingLayersAnimation(state, timingOptions);
   }
 
-  return scaleAnimation(state, options);
+  return scaleAnimation(state, timingOptions);
 };
 
 const waapiOnRead = ({ animation }) => {

@@ -43,6 +43,12 @@ export function styleValue(prop: string, value: string | number): string | numbe
   return value;
 }
 
+export function getStaggerDelay(index: number, stagger: number | ((index: number) => number)): number {
+  return typeof stagger === 'function'
+    ? stagger(index)
+    : (stagger || 0) * index;
+}
+
 // (window as any).persistLayout = (node: Element): any[] => {
 //   const result = [];
 //   const { children } = node;
