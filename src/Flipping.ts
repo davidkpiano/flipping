@@ -55,7 +55,7 @@ export interface IFlipState {
   delta: IBounds | undefined;
   animation: any;
   index: number;
-  previous: IFlipState | undefined;
+  previous: Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'node'> | undefined;
   start: number;
 }
 
@@ -188,6 +188,21 @@ class Flipping {
       left: childBounds.left - parentBounds.left
     };
   }
+  private findParent(node: Element, parent: Element = this.parentElement): Element {
+    const parentKey = node.getAttribute('data-flip-parent');
+
+    if (!parentKey) {
+      return parent;
+    }
+
+    let currentParent = node.parentElement;
+
+    while (currentParent && this.getKey(currentParent) !== parentKey) {
+      currentParent = currentParent.parentElement;
+    }
+
+    return currentParent || parent;
+  }
   public read(
     options: IFlippingOptions = {}
   ) {
@@ -199,36 +214,43 @@ class Flipping {
     const parentElement = options.parent || this.parentElement;
     const nodes = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
-    const parentBounds = this.getBounds(parentElement);
     const config = {
       onFlip: this.onFlip,
       onEnter: this.onEnter,
       onLeave: this.onLeave,
       ...options
     };
-
+    
     nodes.forEach((node, index) => {
       const key = this.getKey(node);
+      const childParent = this.findParent(node, parentElement);
+      const parentBounds = this.getBounds(childParent);
       const previous = this.states[key];
       const isPresent = previous && previous.type !== 'LEAVE';
 
       const bounds = this.getRelativeBounds(parentBounds, this.getBounds(node));
+      const delta = isPresent ? this.getDelta(previous.bounds, bounds) : undefined;
 
       const newState: IFlipState = {
         type: isPresent ? 'MOVE' : 'ENTER',
         key,
         node,
         bounds,
-        delta: isPresent ? this.getDelta(previous.bounds, bounds) : undefined,
+        delta,
         start: Date.now(),
         animation: isPresent ? previous.animation : undefined,
         index,
-        previous
+        previous: previous ? {
+          type: previous.type,
+          bounds: previous.bounds,
+          animation: previous.animation,
+          node: previous.node,
+        } : undefined
       };
 
       this.states[key] = fullState[key] = newState;
 
-      if (options.readOnly) {
+      if (options.readOnly) {      
         this.onRead(newState);
       }
     });
@@ -238,6 +260,8 @@ class Flipping {
     }
 
     Object.keys(this.states).forEach(key => {
+      const prevState = this.states[key];
+
       if (fullState[key]) {
         return;
       }
@@ -249,7 +273,12 @@ class Flipping {
         bounds: undefined,
         start: Date.now(),
         animation: undefined,
-        previous: this.states[key]
+        previous: {
+          type: prevState.type,
+          bounds: prevState.bounds,
+          animation: prevState.animation,
+          node: prevState.node
+        }
       } as IFlipState;
     });
 
