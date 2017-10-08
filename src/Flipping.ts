@@ -61,7 +61,7 @@ export interface IFlipState {
 
 const identity: <T>(arg: T) => T = a => a;
 
-const noop = () => { };
+const noop = () => {};
 
 const rect = (node: Element): IBounds => {
   const { top, left, width, height } = node.getBoundingClientRect();
@@ -301,11 +301,11 @@ class Flipping {
       }[state.type].call(this, state, key, fullState);
 
       if (nextAnimation) {
-        this.animate(key, nextAnimation);
+        this.setAnimation(key, nextAnimation);
       }
     });
   }
-  public animate(key: string, animation: any): void {
+  public setAnimation(key: string, animation: any): void {
     this.states[key].animation = animation;
   }
   public wrap(
@@ -317,6 +317,23 @@ class Flipping {
       const result = fn.apply(null, args);
       this.flip(options);
       return result;
+    };
+  }
+  public progress(key: string, fraction: number): IBounds {
+    return Flipping.progress(this.states[key].delta, fraction);
+  }
+  static progress(delta: IBounds, fraction: number): IBounds {
+    if (!delta) {
+      return NO_DELTA;
+    }
+
+    const invFraction = 1 - fraction;
+
+    return {
+      top: delta.top * invFraction,
+      left: delta.left * invFraction,
+      width: delta.width * invFraction,
+      height:  delta.height * invFraction
     };
   }
   static rect = rect;

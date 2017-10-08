@@ -1,96 +1,161 @@
-// import Flipping, { IFlippingOptions } from '../src/flipping';
-// import { assert } from 'chai';
+import Flipping from '../src/flipping';
+import { assert } from 'chai';
 
-// const createMockNode: () => Element = () => ({
-//   rect: {
-//     top: 0,
-//     left: 0,
-//     height: 100,
-//     width: 100
-//   },
-//   getAttribute() {
-//     return 'test';
-//   },
-//   getBoundingClientRect() {
-//     return this.rect;
-//   }
-// });
+declare type Element = {
+  getAttribute: (attr: string) => string;
+  getBoundingClientRect: () => IRect;
+  _setRect: (rect: IRect) => void;
+}
 
-// function createMockFlip(node: Element, options: IFlippingOptions) {
-//   return new Flipping({
-//     selector: (element: Element) => [node],
-//     ...options
-//   });
-// }
+function mockGetBounds(node: Element) {
+  return {
+    ...node.getBoundingClientRect()
+  }
+}
 
-// describe('Flipping', () => {
-//   it('should exist', () => {
-//     assert.isFunction(Flipping);
-//   });
+interface IRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
 
-//   describe('reading', () => {
-//     it('should provide the current bounds of the node', done => {
-//       const mockNode = createMockNode();
-//       const MockFlip = createMockFlip(mockNode, {
-//         onRead: state => {
-//           assert.deepEqual(state.last, mockNode.rect);
-//           done();
-//         }
-//       });
+function createMockElement(key: string | undefined, rect: IRect): Element {
+  let currentRect = rect;
 
-//       MockFlip.read(null);
-//     });
-//   });
+  return {
+    getAttribute() {
+      return key;
+    },
+    getBoundingClientRect() {
+      return currentRect;
+    },
+    _setRect(newRect: IRect) {
+      currentRect = newRect;
+    }
+  }
+}
 
-//   describe('flipping', () => {
-//     it('should provide the correct first, last and delta of the node', done => {
-//       const mockNode = createMockNode();
-//       const MockFlip = createMockFlip(mockNode, {
-//         onFlip: state => {
-//           assert.deepEqual(
-//             state.first,
-//             {
-//               top: 0,
-//               left: 0,
-//               height: 100,
-//               width: 100
-//             },
-//             'first should be correct'
-//           );
-//           assert.deepEqual(
-//             state.last,
-//             {
-//               top: 20,
-//               left: 30,
-//               height: 200,
-//               width: 400
-//             },
-//             'last should be correct'
-//           );
-//           assert.deepEqual(
-//             state.delta,
-//             {
-//               top: -20,
-//               left: -30,
-//               height: 0.5,
-//               width: 0.25
-//             },
-//             'delta should be correct'
-//           );
-//           done();
-//         }
-//       });
+function createMockFlip(node: Element, options) {
+  return new Flipping({
+    selector: () => [node as Element],
+    getBounds: mockGetBounds,
+    parent: createMockElement(undefined, {
+      top: 0,
+      left: 0,
+      width: 1000,
+      height: 1000
+    }),
+    ...options
+  });
+}
 
-//       MockFlip.read(null);
+describe('Flipping', () => {
+  it('should exist', () => {
+    assert.isFunction(Flipping);
+  });
 
-//       mockNode.rect = {
-//         top: 20,
-//         left: 30,
-//         height: 200,
-//         width: 400
-//       };
+  describe('reading', () => {
+    it('should provide the current bounds of the node', done => {
+      const mockNode = createMockElement('test', {
+        top: 0,
+        left: 0,
+        width: 10,
+        height: 10
+      });
+      const MockFlip = createMockFlip(mockNode, {
+        onRead: state => {
+          assert.deepEqual(state.bounds, mockNode.getBoundingClientRect());
+          done();
+        }
+      });
 
-//       MockFlip.flip(null);
-//     });
-//   });
-// });
+      MockFlip.read(null);
+    });
+  });
+
+  describe('flipping', () => {
+    it('should provide the correct first, last and delta of the node', done => {
+      const mockNode = createMockElement('test', {
+        top: 0,
+        left: 0,
+        width: 100,
+        height: 100
+      });
+      const MockFlip = createMockFlip(mockNode, {
+        onFlip: state => {
+          assert.deepEqual(
+            state.previous.bounds,
+            {
+              top: 0,
+              left: 0,
+              height: 100,
+              width: 100
+            },
+            'previous bounds should be correct'
+          );
+          assert.deepEqual(
+            state.bounds,
+            {
+              top: 20,
+              left: 30,
+              height: 200,
+              width: 400
+            },
+            'bounds should be correct'
+          );
+          assert.deepEqual(
+            state.delta,
+            {
+              top: -20,
+              left: -30,
+              height: 0.5,
+              width: 0.25
+            },
+            'delta should be correct'
+          );
+          done();
+        }
+      });
+
+      MockFlip.read();
+
+      mockNode._setRect({
+        top: 20,
+        left: 30,
+        height: 200,
+        width: 400
+      });
+
+      MockFlip.flip();
+    });
+  });
+
+  describe('progress', () => {
+    it('should calculate fractional delta', () => {
+      const delta = {
+        top: 10,
+        left: 20,
+        width: 2,
+        height: 3
+      };
+      const halfProgress = Flipping.progress(delta, 0.5);
+      assert.deepEqual(halfProgress, {
+        top: 5,
+        left: 10,
+        width: 1,
+        height: 1.5
+      });
+    });
+
+    it('should return zero delta if not moved', () => {
+      const halfProgress = Flipping.progress(undefined, 0.5);
+      assert.deepEqual(halfProgress, {
+        top: 0,
+        left: 0,
+        width: 1,
+        height: 1
+      });
+    });
+  });
+});
