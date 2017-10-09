@@ -119,7 +119,6 @@ const selector = (parentNode: Element): Element[] => {
     result.push(node);
   });
 
-  // return Object.keys(visibleNodes).map(key => visibleNodes[key]);
   return result;
 };
 const active = () => true;
