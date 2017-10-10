@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../dist/flipping.web.js"></script>
+  <style>
+    * {
+      position: relative;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body [data-flip-key] {
+      display: none;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    h1 {
+      font-family: Helvetica Neue, sans-serif;
+      color: #ff4444;
+      font-size: 10rem;
+      font-weight: normal;
+      letter-spacing: -.5rem;
+      margin: 0;
+    }
+    
+    h2 {
+      font-style: italic;
+      font-size: 3rem;
+      margin: 0;
+    }
+
+    [data-state="C"] [data-flip-key="C"],
+    [data-state="S1"] [data-flip-key="C"],
+    [data-state="S2"] [data-flip-key="C"],
+    [data-state="Dev"] [data-flip-key="C"],
+    [data-state="Conference"] [data-flip-key="C"] {
+      display: inline-block;
+    }
+    [data-state="S1"] [data-flip-key="S1"],
+    [data-state="S2"] [data-flip-key="S1"],
+    [data-state="Dev"] [data-flip-key="S1"],
+    [data-state="Conference"] [data-flip-key="S1"] {
+      display: inline-block;
+    }
+    [data-state="S2"] [data-flip-key="S2"],
+    [data-state="Dev"] [data-flip-key="S2"],
+    [data-state="Conference"] [data-flip-key="S2"] {
+      display: inline-block;
+    }
+    [data-state="Dev"] [data-flip-key="Dev"],
+    [data-state="Conference"] [data-flip-key="Dev"] {
+      display: inline-block;
+    }
+    [data-state="Conference"] [data-flip-key="Conference"] {
+      display: inline-block;
+    }
+  </style>
+</head>
+<body data-state="C">
+  <h1>
+    <span data-flip-key="C">C</span>
+    <span data-flip-key="S1">S</span>
+    <span data-flip-key="S2">S</span>
+  </h1>
+  <h2><span data-flip-key="Dev">Dev</span> <span data-flip-key="Conference">Conference</span></h2>
+  <script>
+    const flipping = new Flipping();
+    const machine = {
+      C: 'S1',
+      S1: 'S2',
+      S2: 'Dev',
+      Dev: 'Conference',
+      Conference: 'C'
+    };
+
+    let state = 'C';
+
+    document.body.addEventListener('click', flipping.wrap(() => {
+      state = machine[state];
+      document.body.setAttribute('data-state', state);
+    }));
+  </script>
+</body>
+</html>

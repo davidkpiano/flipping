@@ -2,8 +2,21 @@ import { IFlipState, IFlipNodeMode, IFlipNodesMode } from './Flipping';
 import { matrixTranslate, matrixMultiply } from './utils';
 import * as Rematrix from 'rematrix';
 
-export const scale = (state: IFlipState): IFlipNodesMode => {
-  const { bounds, delta } = state;
+export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
+  const { bounds, delta, type } = state;
+  if (type === 'ENTER') {
+    return {
+      node: {
+        from: {
+          transform: 'scale(0)'
+        },
+        to: {
+          transform: 'scale(1)'
+        }
+      }
+    }
+  }
+
   const scaleChanged = delta.width !== 1 || delta.height !== 1;
   const translate = Rematrix.translate(delta.left, delta.top);
   const scale = scaleChanged
