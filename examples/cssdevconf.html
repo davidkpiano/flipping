@@ -20,12 +20,21 @@
       padding: 0;
     }
 
-    body [data-flip-key] {
-      display: none;
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-content: center;
     }
 
-    h1, h2 {
+    body [data-flip-key] {
+      display: none;
+      will-change: transform;
+    }
+
+    h1, h2, h3 {
       text-align: center;
+      margin: 0;
     }
 
     h1 {
@@ -34,39 +43,48 @@
       font-size: 10rem;
       font-weight: normal;
       letter-spacing: -.5rem;
-      margin: 0;
     }
     
     h2 {
       font-style: italic;
       font-size: 3rem;
-      margin: 0;
     }
 
-    [data-state="C"] [data-flip-key="C"],
-    [data-state="S1"] [data-flip-key="C"],
-    [data-state="S2"] [data-flip-key="C"],
-    [data-state="Dev"] [data-flip-key="C"],
-    [data-state="Conference"] [data-flip-key="C"] {
+    h3 {
+      font-weight: 400;
+      font-family: Helvetica Neue, sans-serif;
+      font-size: 2rem;
+      color: rgb(75, 135, 239);
+      letter-spacing: .3rem;
+    }
+
+    [data-state^="C"] [data-flip-key="C"] {
       display: inline-block;
     }
-    [data-state="S1"] [data-flip-key="S1"],
-    [data-state="S2"] [data-flip-key="S1"],
-    [data-state="Dev"] [data-flip-key="S1"],
-    [data-state="Conference"] [data-flip-key="S1"] {
+    [data-state^="C"] marquee > [data-flip-key="hashtag"] {
       display: inline-block;
     }
-    [data-state="S2"] [data-flip-key="S2"],
-    [data-state="Dev"] [data-flip-key="S2"],
-    [data-state="Conference"] [data-flip-key="S2"] {
+    [data-state^="CS"] [data-flip-key="S1"] {
       display: inline-block;
     }
-    [data-state="Dev"] [data-flip-key="Dev"],
-    [data-state="Conference"] [data-flip-key="Dev"] {
+    [data-state^="CSS"] [data-flip-key="S2"] {
       display: inline-block;
     }
-    [data-state="Conference"] [data-flip-key="Conference"] {
+    [data-state^="CSS Dev"] [data-flip-key="Dev"] {
       display: inline-block;
+    }
+    [data-state^="CSS Dev Conference"] [data-flip-key="Conference"] {
+      display: inline-block;
+    }
+    [data-state^="CSS Dev Conference"] marquee {
+      display: none;
+    }
+    [data-state^="CSS Dev Conference"] [data-flip-key="hashtag"] {
+      display: inline-block;
+    }
+
+    [data-state^="CSS Dev"] {
+      justify-content: center;
     }
   </style>
 </head>
@@ -80,11 +98,11 @@
   <script>
     const flipping = new Flipping();
     const machine = {
-      C: 'S1',
-      S1: 'S2',
-      S2: 'Dev',
-      Dev: 'Conference',
-      Conference: 'C'
+      C: 'CS',
+      CS: 'CSS',
+      CSS: 'CSS Dev',
+      'CSS Dev': 'CSS Dev Conference',
+      'CSS Dev Conference': 'C'
     };
 
     let state = 'C';
