@@ -1,4 +1,6 @@
 import * as Rematrix from 'rematrix';
+import { IBounds } from './types';
+import { NO_DELTA } from './constants';
 
 export function mapValues(
   object: object,
@@ -49,6 +51,52 @@ export function getStaggerDelay(index: number, stagger: number | ((index: number
     : (stagger || 0) * index;
 }
 
+export const identity: <T>(arg: T) => T = a => a;
+export const noop = () => {};
+export const rect = (node: Element): IBounds => {
+  const { top, left, width, height } = node.getBoundingClientRect();
+
+  return {
+    top,
+    left,
+    width,
+    height,
+    transform: getComputedStyle(node).transform
+  };
+};
+export function isHidden(node: Element) {
+  const { width, height } = rect(node);
+
+  return width === 0 && height === 0;
+}
+export function getDelta(a: IBounds, b: IBounds): IBounds {
+  if (!a) {
+    return NO_DELTA;
+  }
+  if (!a.height) {
+    return a;
+  }
+  if (!b.height) {
+    return b;
+  }
+  return {
+    top: a.top - b.top,
+    left: a.left - b.left,
+    width: a.width / b.width,
+    height: a.height / b.height
+  };
+}
+export const deltaChanged = (delta: IBounds): boolean => {
+  return !!delta.top || !!delta.left || delta.width !== 1 || delta.height !== 1;
+};
+export const boundsChanged = (a: IBounds, b: IBounds): boolean => {
+  return !!(
+    a.top - b.top ||
+    a.left - b.left ||
+    a.width - b.width ||
+    a.height - b.height
+  );
+};
 // (window as any).persistLayout = (node: Element): any[] => {
 //   const result = [];
 //   const { children } = node;

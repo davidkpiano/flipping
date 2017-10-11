@@ -1,108 +1,6 @@
-interface IBounds {
-  top?: number;
-  left?: number;
-  width?: number;
-  height?: number;
-  transform?: string;
-}
-
-export type FlipIteratee = (
-  state: IFlipState,
-  key: string,
-  fullState: { [key: string]: IFlipState }
-) => any;
-
-export interface IFlippingConfig {
-  active?: (element: Element) => boolean;
-  getDelta?: (Bounds) => IBounds;
-  getBounds?: (node: Element) => IBounds;
-  selector?: (parent: Element) => Element[];
-  onFlip?: FlipIteratee;
-  onRead?: (state: IFlipState) => void;
-  onEnter?: (state: IFlipState) => void;
-  onLeave?: (state: IFlipState) => void;
-  getKey?: () => string;
-  parent?: Element;
-}
-
-interface IFlippingOptions extends IFlippingConfig {
-  readOnly?: boolean;
-}
-
-export interface IFlipNodeMode {
-  from: {
-    x?: number;
-    y?: number;
-    [key: string]: string | number;
-  };
-  to: {
-    x?: number;
-    y?: number;
-    [key: string]: string | number;
-  };
-}
-
-export interface IFlipNodesMode {
-  node: IFlipNodeMode;
-  container?: IFlipNodeMode;
-}
-
-export interface IFlipState {
-  type: 'ENTER' | 'MOVE' | 'LEAVE';
-  key: string;
-  node: Element | undefined;
-  bounds: IBounds;
-  delta: IBounds | undefined;
-  animation: any;
-  index: number;
-  previous: Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'node'> | undefined;
-  start: number;
-}
-
-const identity: <T>(arg: T) => T = a => a;
-
-const noop = () => {};
-
-const rect = (node: Element): IBounds => {
-  const { top, left, width, height } = node.getBoundingClientRect();
-
-  return {
-    top,
-    left,
-    width,
-    height,
-    transform: getComputedStyle(node).transform
-  };
-};
-
-const FOLLOW_ATTR = 'data-flip-follow';
-const KEY_ATTR = 'data-flip-key';
-
-function isHidden(node: Element) {
-  const { width, height } = rect(node);
-
-  return width === 0 && height === 0;
-}
-
-const NO_DELTA: IBounds = { top: 0, left: 0, width: 1, height: 1 };
-
-function getDelta(a: IBounds, b: IBounds): IBounds {
-  if (!a) {
-    return NO_DELTA;
-  }
-  if (!a.height) {
-    return a;
-  }
-  if (!b.height) {
-    return b;
-  }
-  return {
-    top: a.top - b.top,
-    left: a.left - b.left,
-    width: a.width / b.width,
-    height: a.height / b.height
-  };
-}
+import { identity, noop, rect, isHidden, getDelta } from './utils';
+import { IBounds, IFlippingConfig, IFlippingOptions, IFlipState } from './types';
+import { NO_DELTA, KEY_ATTR, FOLLOW_ATTR } from './constants';
 
 const selector = (parentNode: Element): Element[] => {
   const nodes = parentNode.querySelectorAll(`[${KEY_ATTR}]`);
@@ -123,17 +21,6 @@ const selector = (parentNode: Element): Element[] => {
 };
 const active = () => true;
 const getKey = (node: Element): string => node.getAttribute(KEY_ATTR);
-// const deltaChanged = (delta: IBounds): boolean => {
-//   return !!delta.top || !!delta.left || delta.width !== 1 || delta.height !== 1;
-// };
-// const boundsChanged = (a: IBounds, b: IBounds): boolean => {
-//   return !!(
-//     a.top - b.top ||
-//     a.left - b.left ||
-//     a.width - b.width ||
-//     a.height - b.height
-//   );
-// };
 
 interface IFlipStateMap {
   [key: string]: IFlipState;
