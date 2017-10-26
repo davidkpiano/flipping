@@ -1,4 +1,4 @@
-import { IFlipState, IFlipNodeMode, IFlipNodesMode } from './Flipping';
+import { IFlipState, IFlipNodeMode, IFlipNodesMode } from './types';
 import { matrixTranslate, matrixMultiply } from './utils';
 import * as Rematrix from 'rematrix';
 
@@ -14,7 +14,7 @@ export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
           transform: 'scale(1)'
         }
       }
-    }
+    };
   }
 
   const scaleChanged = delta.width !== 1 || delta.height !== 1;
@@ -33,13 +33,13 @@ export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
     from: {
       x: delta.left,
       y: delta.top,
-      ...(transformOrigin ? { transformOrigin } : undefined),
+      ...transformOrigin ? { transformOrigin } : undefined,
       transform: `matrix3d(${invertedMatrix})`
     },
     to: {
       x: bounds.left,
       y: bounds.top,
-      ...(transformOrigin ? { transformOrigin } : undefined),
+      ...transformOrigin ? { transformOrigin } : undefined,
       transform: bounds.transform
     }
   };

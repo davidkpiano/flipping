@@ -7,7 +7,7 @@
     "start": "npm run build:watch",
     "test": "mocha -r ts-node/register test/**.test.ts",
     "build:prod": "webpack --config webpack.config.prod.js",
-    "build:watch": "webpack --config webpack.config.js -w",
+    "build:watch": "webpack --config webpack.config.prod.js -w",
     "prepublish": "npm run build:prod"
   },
   "repository": {
@@ -40,6 +40,7 @@
     "webpack": "^2.3.2"
   },
   "dependencies": {
+    "mitt": "^1.1.2",
     "rematrix": "^0.1.0"
   }
 }

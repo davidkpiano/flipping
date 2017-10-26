@@ -6,6 +6,10 @@ export interface IBounds {
   transform?: string;
 }
 
+export interface IFlipStateMap<TAnimation = any> {
+  [key: string]: IFlipState<TAnimation>;
+}
+
 export type FlipIteratee = (
   state: IFlipState,
   key: string,
@@ -17,10 +21,10 @@ export interface IFlippingConfig {
   getDelta?: (Bounds) => IBounds;
   getBounds?: (node: Element) => IBounds;
   selector?: (parent: Element) => Element[];
-  onFlip?: FlipIteratee;
-  onRead?: (state: IFlipState) => void;
-  onEnter?: (state: IFlipState) => void;
-  onLeave?: (state: IFlipState) => void;
+  onFlip?: (state: IFlipStateMap) => void;
+  onRead?: (state: IFlipStateMap) => void;
+  onEnter?: (state: IFlipStateMap) => void;
+  onLeave?: (state: IFlipStateMap) => void;
   getKey?: () => string;
   parent?: Element;
 }
@@ -49,14 +53,16 @@ export interface IFlipNodesMode {
 
 export type IFlipStateType = 'ENTER' | 'MOVE' | 'LEAVE';
 
-export interface IFlipState {
+export interface IFlipState<TAnimation = any> {
   type: IFlipStateType;
   key: string;
   node: Element | undefined;
   bounds: IBounds;
   delta: IBounds | undefined;
-  animation: any;
+  animation: TAnimation;
   index: number;
-  previous: Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'node'> | undefined;
+  previous:
+    | Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'node'>
+    | undefined;
   start: number;
 }

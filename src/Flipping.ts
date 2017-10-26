@@ -1,6 +1,13 @@
+// import * as mitt from 'mitt';
 import { identity, noop, rect, isHidden, getDelta } from './utils';
-import { IBounds, IFlippingConfig, IFlippingOptions, IFlipState } from './types';
-import { NO_DELTA, KEY_ATTR, FOLLOW_ATTR } from './constants';
+import {
+  IBounds,
+  IFlippingConfig,
+  IFlippingOptions,
+  IFlipState,
+  IFlipStateMap
+} from './types';
+import { NO_DELTA, KEY_ATTR /* FOLLOW_ATTR */ } from './constants';
 
 const selector = (parentNode: Element): Element[] => {
   const nodes = parentNode.querySelectorAll(`[${KEY_ATTR}]`);
@@ -22,17 +29,9 @@ const selector = (parentNode: Element): Element[] => {
 const active = () => true;
 const getKey = (node: Element): string => node.getAttribute(KEY_ATTR);
 
-interface IFlipStateMap {
-  [key: string]: IFlipState;
-}
+type FlipEventHandler = (fullState: IFlipStateMap) => any;
 
-type FlipEventHandler = (
-  state: IFlipState,
-  key: string,
-  fullState: IFlipStateMap
-) => any;
-
-class Flipping {
+class Flipping<TAnimation = any> {
   public selector: (element: Element) => Element[];
   public active: (element: Element) => boolean;
   private selectActive: (element) => Element[];
@@ -42,17 +41,14 @@ class Flipping {
   public onFlip?: FlipEventHandler;
   public onEnter?: FlipEventHandler;
   public onLeave?: FlipEventHandler;
-  public onRead?: (state: IFlipState) => void;
-  public states: { [key: string]: IFlipState };
+  public onRead?: (stateMap: IFlipStateMap) => void;
+  public states: { [key: string]: IFlipState<TAnimation> };
   public parentElement: Element;
 
   constructor(options: IFlippingConfig & { [key: string]: any } = {}) {
     this.selector = options.selector || selector;
     this.active = options.active || active;
-    this.selectActive = (node: Element) =>
-      this.selector(node).filter(element => {
-        return this.active(element);
-      });
+    this.selectActive = this.selector;
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
     this.getKey = options.getKey || getKey;
@@ -74,7 +70,10 @@ class Flipping {
       left: childBounds.left - parentBounds.left
     };
   }
-  private findParent(node: Element, parent: Element = this.parentElement): Element {
+  private findParent(
+    node: Element,
+    parent: Element = this.parentElement
+  ): Element {
     const parentKey = node.getAttribute('data-flip-parent');
 
     if (!parentKey) {
@@ -89,14 +88,10 @@ class Flipping {
 
     return currentParent || parent;
   }
-  public read(
-    options: IFlippingOptions = {}
-  ) {
+  public read(options: IFlippingOptions = {}) {
     this.flip({ ...options, readOnly: true });
   }
-  public flip(
-    options: IFlippingOptions = {}
-  ) {
+  public flip(options: IFlippingOptions = {}) {
     const parentElement = options.parent || this.parentElement;
     const nodes = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
@@ -106,7 +101,7 @@ class Flipping {
       onLeave: this.onLeave,
       ...options
     };
-    
+
     nodes.forEach((node, index) => {
       const key = this.getKey(node);
       const childParent = this.findParent(node, parentElement);
@@ -115,7 +110,9 @@ class Flipping {
       const isPresent = previous && previous.type !== 'LEAVE';
 
       const bounds = this.getRelativeBounds(parentBounds, this.getBounds(node));
-      const delta = isPresent ? this.getDelta(previous.bounds, bounds) : undefined;
+      const delta = isPresent
+        ? this.getDelta(previous.bounds, bounds)
+        : undefined;
 
       const newState: IFlipState = {
         type: isPresent ? 'MOVE' : 'ENTER',
@@ -126,22 +123,21 @@ class Flipping {
         start: Date.now(),
         animation: isPresent ? previous.animation : undefined,
         index,
-        previous: previous ? {
-          type: previous.type,
-          bounds: previous.bounds,
-          animation: previous.animation,
-          node: previous.node,
-        } : undefined
+        previous: previous
+          ? {
+              type: previous.type,
+              bounds: previous.bounds,
+              animation: previous.animation,
+              node: previous.node
+            }
+          : undefined
       };
 
       this.states[key] = fullState[key] = newState;
-
-      if (options.readOnly) {      
-        this.onRead(newState);
-      }
     });
 
     if (options.readOnly) {
+      this.onRead(fullState);
       return;
     }
 
@@ -168,39 +164,41 @@ class Flipping {
       } as IFlipState;
     });
 
-    Object.keys(fullState).forEach(key => {
-      const state = fullState[key];
-      const node = state.node || (state.previous && state.previous.node);
+    config.onFlip(fullState);
 
-      if (node) {
-        const followKey = node.getAttribute(FOLLOW_ATTR);
+    // Object.keys(fullState).forEach(key => {
+    //   const state = fullState[key];
+    //   const node = state.node || (state.previous && state.previous.node);
 
-        if ((state.type === 'ENTER' || state.type === 'LEAVE') && followKey) {
-          state.delta = fullState[followKey].delta;
-        }
-      }
+    //   if (node) {
+    //     const followKey = node.getAttribute(FOLLOW_ATTR);
 
-      const nextAnimation = {
-        ENTER: config.onEnter,
-        MOVE: config.onFlip,
-        LEAVE: config.onLeave
-      }[state.type].call(this, state, key, fullState);
+    //     if ((state.type === 'ENTER' || state.type === 'LEAVE') && followKey) {
+    //       state.delta = fullState[followKey].delta;
+    //     }
+    //   }
 
-      if (nextAnimation) {
-        this.setAnimation(key, nextAnimation);
-      }
-    });
+    //   const nextAnimation = {
+    //     ENTER: config.onEnter,
+    //     MOVE: config.onFlip,
+    //     LEAVE: config.onLeave
+    //   }[state.type].call(this, state, key, fullState);
+
+    //   if (nextAnimation) {
+    //     this.setAnimation(key, nextAnimation);
+    //   }
+    // });
   }
   public setAnimation(key: string, animation: any): void {
     this.states[key].animation = animation;
   }
-  public wrap(
-    fn: Function,
+  public wrap<T>(
+    fn: (...args: any[]) => T,
     options: IFlippingOptions = {}
   ): Function {
     return (...args) => {
       this.read(options);
-      const result = fn.apply(null, args);
+      const result = fn.apply(null, args) as T;
       this.flip(options);
       return result;
     };
@@ -219,7 +217,7 @@ class Flipping {
       top: delta.top * invFraction,
       left: delta.left * invFraction,
       width: delta.width * invFraction,
-      height:  delta.height * invFraction
+      height: delta.height * invFraction
     };
   }
   static rect = rect;

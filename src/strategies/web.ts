@@ -1,4 +1,10 @@
-import Flipping, { IFlippingConfig, IFlipState, IFlipNodesMode } from '../Flipping';
+import {
+  IFlippingConfig,
+  IFlipState,
+  IFlipStateMap,
+  IFlipNodesMode
+} from '../types';
+import Flipping from '../Flipping';
 import * as animations from '../animations';
 import { mapValues, styleValue, getStaggerDelay } from '../utils';
 
@@ -6,34 +12,55 @@ interface ICustomEffectTiming {
   stagger?: number | ((index: number) => number);
 }
 
-type FlippingWebOptions = IFlippingConfig & AnimationEffectTiming & ICustomEffectTiming;
+type FlippingWebOptions = IFlippingConfig &
+  AnimationEffectTiming &
+  ICustomEffectTiming;
 
-function animate(mode: IFlipNodesMode, nodeMap: Record<string, Element>, options: FlippingWebOptions): any {
+function animate(
+  mode: IFlipNodesMode,
+  nodeMap: Record<string, Element>,
+  options: FlippingWebOptions
+): any {
   const nodeAnimations = mapValues(nodeMap, (node, nodeKey) => {
-    return node.animate([
-      mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
-      mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value)),
-    ], options);
+    return node.animate(
+      [
+        mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
+        mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value))
+      ],
+      options
+    );
   });
 
   return {
     finish: () => {
-      Object.keys(nodeAnimations).forEach(nodeKey => nodeAnimations[nodeKey].finish());
+      Object.keys(nodeAnimations).forEach(nodeKey =>
+        nodeAnimations[nodeKey].finish()
+      );
     }
-  }
+  };
 }
 
-const slidingLayersAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
+const slidingLayersAnimation = (
+  state: IFlipState,
+  options: FlippingWebOptions
+): any => {
   const { node } = state;
   const mode = animations.slide(state);
 
-  return animate(mode, {
-    node,
-    container: node.parentElement
-  }, options);
+  return animate(
+    mode,
+    {
+      node,
+      container: node.parentElement
+    },
+    options
+  );
 };
 
-const scaleAnimation = (state: IFlipState, options: FlippingWebOptions = {}): any => {
+const scaleAnimation = (
+  state: IFlipState,
+  options: FlippingWebOptions = {}
+): any => {
   const { node } = state;
   const mode = animations.scale(state);
 
@@ -45,9 +72,10 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
 
   const timingOptions: FlippingWebOptions = {
     ...options,
-    delay: +(options.delay || 0) + getStaggerDelay(state.index, options.stagger),
+    delay:
+      +(options.delay || 0) + getStaggerDelay(state.index, options.stagger),
     fill: options.stagger ? 'both' : 'none'
-  }
+  };
 
   if (!node) {
     return;
@@ -64,11 +92,15 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
   return scaleAnimation(state, timingOptions);
 };
 
-const waapiOnRead = ({ animation }) => {
-  if (animation && animation.finish) {
-    animation.finish();
-  }
-};
+function waapiOnRead(stateMap: IFlipStateMap): void {
+  Object.keys(stateMap).forEach(key => {
+    const { animation } = stateMap[key];
+
+    if (animation && animation.finish) {
+      animation.finish();
+    }
+  });
+}
 
 class FlippingWeb extends Flipping {
   static defaults: FlippingWebOptions = {
@@ -108,8 +140,24 @@ class FlippingWeb extends Flipping {
 
     super({
       onRead: waapiOnRead,
-      onEnter: state => FlippingWeb.animate.auto(state, optionsWithDefaults),
-      onFlip: state => FlippingWeb.animate.auto(state, optionsWithDefaults),
+      onEnter: stateMap => {
+        Object.keys(stateMap).forEach(key => {
+          const animation = FlippingWeb.animate.auto(
+            stateMap[key],
+            optionsWithDefaults
+          );
+          this.setAnimation(key, animation);
+        });
+      },
+      onFlip: stateMap => {
+        Object.keys(stateMap).forEach(key => {
+          const animation = FlippingWeb.animate.auto(
+            stateMap[key],
+            optionsWithDefaults
+          );
+          this.setAnimation(key, animation);
+        });
+      },
       ...optionsWithDefaults
     });
   }

@@ -1,36 +1,56 @@
-import Flipping, { IFlippingConfig, IFlipState, IFlipNodesMode } from '../Flipping';
+import Flipping from '../Flipping';
+import {
+  IFlippingConfig,
+  IFlipState,
+  IFlipNodesMode,
+  IFlipStateMap
+} from '../types';
 import * as animations from '../animations';
 import { mapValues, styleValue, getStaggerDelay } from '../utils';
 import * as GSAP from 'gsap';
 
-function animate(mode: IFlipNodesMode, nodeMap: Record<string, Element>, options): any {
+type GSAPAnimation = {
+  finish: () => void;
+};
+
+function animate(
+  mode: IFlipNodesMode,
+  nodeMap: Record<string, Element>,
+  options
+): any {
   const nodeAnimations = mapValues(nodeMap, (node, nodeKey) => {
-    return (window as any).aa = GSAP.TweenLite.fromTo(
-      node,
-      options.duration,
-      mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
-      mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value))
-    ).delay(options.delay);
+    return GSAP.TweenLite
+      .fromTo(
+        node,
+        options.duration,
+        mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
+        mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value))
+      )
+      .delay(options.delay);
   });
 
   return {
     finish: () => {
       Object.keys(nodeAnimations).forEach(nodeKey => {
         GSAP.TweenLite.set(nodeMap[nodeKey], { clearProps: 'all' });
-        nodeAnimations[nodeKey].kill()
+        nodeAnimations[nodeKey].kill();
       });
     }
-  }
+  };
 }
 
 const slidingLayersAnimation = (state: IFlipState, options): any => {
   const { node } = state;
   const mode = animations.slide(state);
 
-  return animate(mode, {
-    node,
-    container: node.parentElement
-  }, options);
+  return animate(
+    mode,
+    {
+      node,
+      container: node.parentElement
+    },
+    options
+  );
 };
 
 const scaleAnimation = (state: IFlipState, options: any = {}): any => {
@@ -46,8 +66,10 @@ const autoAnimation = (state: IFlipState, options): any => {
   const timingOptions = {
     ...options,
     duration: (options.duration || 0) / 1000,
-    delay: +((options.delay || 0) + getStaggerDelay(state.index, options.stagger)) / 1000
-  }
+    delay:
+      +((options.delay || 0) + getStaggerDelay(state.index, options.stagger)) /
+      1000
+  };
 
   if (!node) {
     return;
@@ -64,11 +86,15 @@ const autoAnimation = (state: IFlipState, options): any => {
   return scaleAnimation(state, timingOptions);
 };
 
-const waapiOnRead = ({ animation }) => {
-  if (animation && animation.finish) {
-    animation.finish();
-  }
-};
+function gsapOnRead(stateMap: IFlipStateMap<GSAPAnimation>): void {
+  Object.keys(stateMap).forEach(key => {
+    const { animation } = stateMap[key];
+
+    if (animation && animation.finish) {
+      animation.finish();
+    }
+  });
+}
 
 const defaultOptions: IFlippingConfig & Record<string, any> = {
   duration: 0.3,
@@ -91,7 +117,7 @@ const defaultOptions: IFlippingConfig & Record<string, any> = {
   }
 };
 
-class FlippingWeb extends Flipping {
+class FlippingGsap extends Flipping<GSAPAnimation> {
   static animate = {
     auto: autoAnimation,
     transform: scaleAnimation,
@@ -105,12 +131,19 @@ class FlippingWeb extends Flipping {
     };
 
     super({
-      onRead: waapiOnRead,
-      onEnter: state => FlippingWeb.animate.auto(state, optionsWithDefaults),
-      onFlip: state => FlippingWeb.animate.auto(state, optionsWithDefaults),
-      ...optionsWithDefaults
+      onRead: gsapOnRead,
+      onEnter: stateMap => {
+        Object.keys(stateMap).forEach(key => {
+          FlippingGsap.animate.auto(stateMap[key], optionsWithDefaults);
+        });
+      },
+      onFlip: stateMap => {
+        Object.keys(stateMap).forEach(key => {
+          FlippingGsap.animate.auto(stateMap[key], optionsWithDefaults);
+        });
+      }
     });
   }
 }
 
-export = FlippingWeb;
+export = FlippingGsap;
