@@ -1,13 +1,13 @@
 /* eslint strict:0 */
 var path = require('path');
 
-'use strict';
+('use strict');
 
 module.exports = {
   entry: {
-    'flipping': './src/index',
+    flipping: './src/index',
     'flipping.web': './src/strategies/web',
-    'flipping.gsap': './src/strategies/gsap',
+    'flipping.gsap': './src/strategies/gsap'
   },
   output: {
     library: 'Flipping',
@@ -17,13 +17,13 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
-    modules: ['node_modules']
+    modules: ['node_modules'],
+    alias: {
+      mitt: path.resolve(__dirname, './node_modules/mitt/dist/mitt.umd.js')
+    }
   },
   module: {
-    loaders: [
-      { test: /\.ts$/, loader: 'ts-loader' }
-    ]
+    loaders: [{ test: /\.ts$/, loader: 'ts-loader' }],
   },
-  devtool: 'inline-source-map',
+  devtool: 'inline-source-map'
 };
-

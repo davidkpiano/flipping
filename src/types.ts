@@ -16,6 +16,16 @@ export type FlipIteratee = (
   fullState: { [key: string]: IFlipState }
 ) => any;
 
+export type FlipEventName = 'read' | 'flip' | 'enter' | 'leave';
+export type FlipEventListener = (fullState: IFlipStateMap) => any;
+export type FlipStateEventListener = (state: IFlipState) => any;
+export type FlipEmit = (type: FlipEventName, event?: IFlipStateMap) => void;
+export type FlipPlugin = (
+  stateMap: IFlipStateMap,
+  eventName: FlipEventName,
+  emit: FlipEmit
+) => IFlipStateMap;
+
 export interface IFlippingConfig {
   active?: (element: Element) => boolean;
   getDelta?: (Bounds) => IBounds;
@@ -27,6 +37,7 @@ export interface IFlippingConfig {
   onLeave?: (state: IFlipStateMap) => void;
   getKey?: () => string;
   parent?: Element;
+  plugins?: FlipPlugin[];
 }
 
 export interface IFlippingOptions extends IFlippingConfig {
