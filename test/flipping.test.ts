@@ -5,12 +5,12 @@ declare type Element = {
   getAttribute: (attr: string) => string;
   getBoundingClientRect: () => IRect;
   _setRect: (rect: IRect) => void;
-}
+};
 
 function mockGetBounds(node: Element) {
   return {
     ...node.getBoundingClientRect()
-  }
+  };
 }
 
 interface IRect {
@@ -33,7 +33,7 @@ function createMockElement(key: string | undefined, rect: IRect): Element {
     _setRect(newRect: IRect) {
       currentRect = newRect;
     }
-  }
+  };
 }
 
 function createMockFlip(node: Element, options) {
@@ -64,8 +64,11 @@ describe('Flipping', () => {
         height: 10
       });
       const MockFlip = createMockFlip(mockNode, {
-        onRead: state => {
-          assert.deepEqual(state.bounds, mockNode.getBoundingClientRect());
+        onRead: states => {
+          assert.deepEqual(
+            states.test.bounds,
+            mockNode.getBoundingClientRect()
+          );
           done();
         }
       });
@@ -83,9 +86,9 @@ describe('Flipping', () => {
         height: 100
       });
       const MockFlip = createMockFlip(mockNode, {
-        onFlip: state => {
+        onFlip: states => {
           assert.deepEqual(
-            state.previous.bounds,
+            states.test.previous.bounds,
             {
               top: 0,
               left: 0,
@@ -95,7 +98,7 @@ describe('Flipping', () => {
             'previous bounds should be correct'
           );
           assert.deepEqual(
-            state.bounds,
+            states.test.bounds,
             {
               top: 20,
               left: 30,
@@ -105,7 +108,7 @@ describe('Flipping', () => {
             'bounds should be correct'
           );
           assert.deepEqual(
-            state.delta,
+            states.test.delta,
             {
               top: -20,
               left: -30,
