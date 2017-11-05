@@ -4,11 +4,14 @@ import * as Rematrix from 'rematrix';
 
 export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
   const { bounds, delta, type } = state;
+
   if (type === 'ENTER') {
     return {
       node: {
         from: {
-          transform: 'scale(0)'
+          transform: `translate(${delta ? delta.left : 0}px, ${delta
+            ? delta.top
+            : 0}px) scale(.01)`
         },
         to: {
           transform: 'scale(1)'

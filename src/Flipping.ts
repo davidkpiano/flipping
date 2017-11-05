@@ -12,6 +12,7 @@ import {
   FlipStateEventListener
 } from './types';
 import { NO_DELTA, KEY_ATTR /* FOLLOW_ATTR */ } from './constants';
+import mirrorPlugin from './plugins/mirror';
 
 const selector = (parentNode: Element): Element[] => {
   const nodes = parentNode.querySelectorAll(`[${KEY_ATTR}]`);
@@ -58,7 +59,7 @@ class Flipping<TAnimation = any> {
     this.getDelta = options.getDelta || getDelta;
     this.getKey = options.getKey || getKey;
     this.parentElement = options.parent || document.documentElement;
-    this.plugins = options.plugins || [];
+    this.plugins = options.plugins || [mirrorPlugin];
 
     this.emitter = new mitt();
     if (options.onRead) {
@@ -107,11 +108,7 @@ class Flipping<TAnimation = any> {
   private dispatch(event: FlipEventName, stateMap: IFlipStateMap): void {
     const finalStateMap = this.plugins.reduce(
       (intermediateStateMap, plugin) => {
-        return plugin(
-          intermediateStateMap,
-          event,
-          this.emitter.emit.bind(this)
-        );
+        return plugin(intermediateStateMap, event);
       },
       stateMap
     );
@@ -222,31 +219,6 @@ class Flipping<TAnimation = any> {
     });
 
     return this.dispatch('flip', fullState);
-
-    // config.onFlip(fullState);
-
-    // Object.keys(fullState).forEach(key => {
-    //   const state = fullState[key];
-    //   const node = state.node || (state.previous && state.previous.node);
-
-    //   if (node) {
-    //     const followKey = node.getAttribute(FOLLOW_ATTR);
-
-    //     if ((state.type === 'ENTER' || state.type === 'LEAVE') && followKey) {
-    //       state.delta = fullState[followKey].delta;
-    //     }
-    //   }
-
-    //   const nextAnimation = {
-    //     ENTER: config.onEnter,
-    //     MOVE: config.onFlip,
-    //     LEAVE: config.onLeave
-    //   }[state.type].call(this, state, key, fullState);
-
-    //   if (nextAnimation) {
-    //     this.setAnimation(key, nextAnimation);
-    //   }
-    // });
   }
   public setAnimation(key: string, animation: any): void {
     this.states[key].animation = animation;

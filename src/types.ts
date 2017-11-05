@@ -22,8 +22,7 @@ export type FlipStateEventListener = (state: IFlipState) => any;
 export type FlipEmit = (type: FlipEventName, event?: IFlipStateMap) => void;
 export type FlipPlugin = (
   stateMap: IFlipStateMap,
-  eventName: FlipEventName,
-  emit: FlipEmit
+  eventName: FlipEventName
 ) => IFlipStateMap;
 
 export interface IFlippingConfig {
@@ -62,7 +61,7 @@ export interface IFlipNodesMode {
   container?: IFlipNodeMode;
 }
 
-export type IFlipStateType = 'ENTER' | 'MOVE' | 'LEAVE';
+export type IFlipStateType = 'PENDING' | 'ENTER' | 'MOVE' | 'LEAVE';
 
 export interface IFlipState<TAnimation = any> {
   type: IFlipStateType;
