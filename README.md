@@ -65,5 +65,5 @@ flipping.flip();
 ## API
 
 Coming soon! For now, take a look at some of these examples:
-- https://codepen.io/davidkpiano/pen/23400cac57335942be28642f6eb8bc7c
+- https://codepen.io/davidkpiano/pen/RjaBpW
 - https://codepen.io/davidkpiano/pen/xLKBpM
