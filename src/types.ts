@@ -28,7 +28,7 @@ export type FlipPlugin = (
 export interface IFlippingConfig {
   active?: (element: Element) => boolean;
   getDelta?: (Bounds) => IBounds;
-  getBounds?: (node: Element) => IBounds;
+  getBounds?: (element: Element) => IBounds;
   selector?: (parent: Element) => Element[];
   onFlip?: (state: IFlipStateMap) => void;
   onRead?: (state: IFlipStateMap) => void;
@@ -43,7 +43,7 @@ export interface IFlippingOptions extends IFlippingConfig {
   readOnly?: boolean;
 }
 
-export interface IFlipNodeMode {
+export interface IFlipElementStrategy {
   from: {
     x?: number;
     y?: number;
@@ -56,9 +56,9 @@ export interface IFlipNodeMode {
   };
 }
 
-export interface IFlipNodesMode {
-  node: IFlipNodeMode;
-  container?: IFlipNodeMode;
+export interface IFlipElementsStrategy {
+  element: IFlipElementStrategy;
+  container?: IFlipElementStrategy;
 }
 
 export type IFlipStateType = 'PENDING' | 'ENTER' | 'MOVE' | 'LEAVE';
@@ -66,13 +66,13 @@ export type IFlipStateType = 'PENDING' | 'ENTER' | 'MOVE' | 'LEAVE';
 export interface IFlipState<TAnimation = any> {
   type: IFlipStateType;
   key: string;
-  node: Element | undefined;
+  element: Element | undefined;
   bounds: IBounds;
   delta: IBounds | undefined;
   animation: TAnimation;
   index: number;
   previous:
-    | Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'node'>
+    | Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'element'>
     | undefined;
   start: number;
 }

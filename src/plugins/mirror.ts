@@ -12,25 +12,25 @@ export default function mirrorPlugin(
 
   Object.keys(states).forEach(key => {
     const state = states[key];
-    const node = state.node || (state.previous && state.previous.node);
+    const element = state.element || (state.previous && state.previous.element);
 
-    if (node) {
-      // const mirrorKey = node.getAttribute('data-flip-mirror');
+    if (element) {
+      // const mirrorKey = element.getAttribute('data-flip-mirror');
 
       if (state.type === 'ENTER' || state.type === 'LEAVE') {
-        let m = node.nextElementSibling;
+        let candidateElement = element.nextElementSibling;
         while (
-          m &&
-          (!m.hasAttribute('data-flip-key') ||
-            states[m.getAttribute('data-flip-key')].type !== 'MOVE')
+          candidateElement &&
+          (!candidateElement.hasAttribute('data-flip-key') ||
+            states[candidateElement.getAttribute('data-flip-key')].type !== 'MOVE')
         ) {
-          m = m.nextElementSibling;
+          candidateElement = candidateElement.nextElementSibling;
         }
 
-        if (m) {
+        if (candidateElement) {
           nextStates[key] = {
             ...state,
-            delta: states[m.getAttribute('data-flip-key')].delta
+            delta: states[candidateElement.getAttribute('data-flip-key')].delta
           };
         } else {
           nextStates[key] = state;

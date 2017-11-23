@@ -8,6 +8,7 @@
     "test": "mocha -r ts-node/register test/**.test.ts",
     "build:prod": "webpack --config webpack.config.prod.js",
     "build:watch": "webpack --config webpack.config.js -w",
+    "examples": "npm start & node-sass -w examples/scss -o examples/css",
     "prepublish": "npm run build:prod"
   },
   "repository": {
@@ -32,6 +33,7 @@
     "chai": "^3.5.0",
     "gsap": "^1.20.3",
     "mocha": "^3.2.0",
+    "node-sass": "^4.7.1",
     "prettier": "^1.4.4",
     "ts-loader": "^2.2.2",
     "ts-node": "^3.0.2",

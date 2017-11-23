@@ -34,10 +34,16 @@ export function matrixScale(x, y) {
 }
 
 export function matrixMultiply(...matrices) {
-  return matrices.filter(a => !!a).reduce(Rematrix.multiply).join(',');
+  return matrices
+    .filter(a => !!a)
+    .reduce(Rematrix.multiply)
+    .join(',');
 }
 
-export function styleValue(prop: string, value: string | number): string | number {
+export function styleValue(
+  prop: string,
+  value: string | number
+): string | number {
   if (['height', 'width'].indexOf(prop) !== -1 && typeof value === 'number') {
     return `${value}px`;
   }
@@ -45,7 +51,10 @@ export function styleValue(prop: string, value: string | number): string | numbe
   return value;
 }
 
-export function getStaggerDelay(index: number, stagger: number | ((index: number) => number)): number {
+export function getStaggerDelay(
+  index: number,
+  stagger: number | ((index: number) => number)
+): number {
   return typeof stagger === 'function'
     ? stagger(index)
     : (stagger || 0) * index;
@@ -53,19 +62,19 @@ export function getStaggerDelay(index: number, stagger: number | ((index: number
 
 export const identity: <T>(arg: T) => T = a => a;
 export const noop = () => {};
-export const rect = (node: Element): IBounds => {
-  const { top, left, width, height } = node.getBoundingClientRect();
+export const rect = (element: Element): IBounds => {
+  const { top, left, width, height } = element.getBoundingClientRect();
 
   return {
     top,
     left,
     width,
     height,
-    transform: getComputedStyle(node).transform
+    transform: getComputedStyle(element).transform
   };
 };
-export function isHidden(node: Element) {
-  const { width, height } = rect(node);
+export function isHidden(element: Element) {
+  const { width, height } = rect(element);
 
   return width === 0 && height === 0;
 }

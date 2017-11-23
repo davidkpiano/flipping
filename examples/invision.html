@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="css/invision.css">
+</head>
+
+<body>
+  <input type="checkbox" name="" id="check">
+  <div id="app">
+    <header class="ui-header"></header>
+    <div class="ui-cards">
+      <div class="ui-card" data-flip-wrap>
+        <div class="ui-layer" data-flip-key="card" data-flip-no-scale style="background:#bbb">
+          <div class="ui-feature" data-flip-key="feature" data-flip-parent="card"></div>
+          <div class="ui-content" data-flip-key="content" data-flip-no-scale data-flip-parent="card" style="background:#666">
+            <div class="ui-title" data-flip-key="title" data-flip-no-scale data-flip-parent="content">
+              InVision iOS
+            </div>
+            <div class="ui-subtitle" data-flip-key="subtitle" data-flip-no-scale>
+              24 Documents
+            </div>
+            <ul class="ui-items">
+              <li class="ui-item">Something 1</li>
+              <li class="ui-item">Something 2</li>
+              <li class="ui-item">Something 3</li>
+              <li class="ui-item">Something 4</li>
+              <li class="ui-item">Something 5</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="ui-footer"></footer>
+  </div>
+  <script src="../dist/flipping.web.js"></script>
+  <script>
+    const flipping = new Flipping();
+
+    const checkbox = document.querySelector('#check');
+
+    checkbox.addEventListener('change', () => {
+      flipping.flip();
+    });
+    
+    flipping.read();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../dist/flipping.js"></script>
+  <style>
+    * {
+      position: relative;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    [data-state="small"] [data-show]:not([data-show="small"]),
+    [data-state="large"] [data-show]:not([data-show="large"]) {
+      display: none;
+    }
+
+    .wrap.-small {
+      width: 10vmin;
+      height: 10vmin;
+    }
+
+    .wrap.-large {
+      width: 30vmin;
+      height: 20vmin;
+      margin-left: -20vmin;
+    }
+
+    .wrap {
+      outline: 1px solid blue;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body data-state="small">
+  <div class="wrap -small" data-show="small" data-flip-key="wrap">
+    <img data-flip-key="img" src="https://farm5.staticflickr.com/4569/24314298418_0fb1c52bfe_m.jpg" alt="">
+  </div>
+  <div class="wrap -large" data-show="large" data-flip-key="wrap">
+    <img data-flip-key="img" src="https://farm5.staticflickr.com/4569/24314298418_0fb1c52bfe_m.jpg" alt="">
+  </div>
+  <div id="layer"></div>
+
+  <script>
+    const flipping = new Flipping();
+
+    const stylesToClone = [
+      'border',
+      'background',
+      'color'
+    ];
+
+    function copyStyles(fromElement, toElement) {
+      var computed = document.defaultView.getComputedStyle(fromElement, '');
+
+      for (var key of stylesToClone) {
+        toElement.style[key] = computed[key];
+      }
+    }
+
+    function cloneStyles(fromElement, toElement) {
+      for (var i = 0; i < fromElement.children.length; i++) {
+        cloneStyles(fromElement.children[i], toElement.children[i]);
+      }
+      copyStyles(fromElement, toElement);
+    }
+
+    function clone(node, parentRect) {
+      const styles = getComputedStyle(node, '');
+      const rect = Flipping.rect(node);
+      const newNode = document.createElement(node.tagName);
+
+      stylesToClone.forEach(prop => {
+        newNode.style.setProperty(prop, styles[prop]);
+      });
+
+      newNode.style.setProperty('left', rect.left - parentRect.left + 'px');
+      newNode.style.setProperty('top', rect.top - parentRect.top + 'px');  
+      newNode.style.setProperty('width', rect.width + 'px');
+      newNode.style.setProperty('height', rect.height + 'px');                
+
+      const map = {};
+
+      if (node.hasAttribute('data-flip-key')) {
+        console.log('yeah');
+        map[node.getAttribute('data-flip-key')] = newNode;
+      }
+
+      [...node.children].forEach(child => {
+        const [childNode, childMap] = clone(child, rect);
+        newNode.appendChild(childNode);
+
+        Object.assign(map, childMap);
+      });
+
+      return [newNode, map];
+    }
+    
+    flipping.onFlip(stateMap => {
+      const { wrap, img } = stateMap;
+      const dw = wrap.bounds.width - wrap.previous.bounds.width;
+      const dh = wrap.bounds.height - wrap.previous.bounds.height;
+
+      document.getElementById('layer').innerHTML = '';
+      // document.getElementById('layer')
+      //   .appendChild(clone(wrap.node, {
+      //     top: 0,
+      //     left: 0,
+      //     width: window.innerWidth,
+      //     height: window.innerHeight
+      //   }));
+      const [newNode, refs] = clone(wrap.node, Flipping.rect(document.documentElement));
+      document.getElementById('layer')
+        .appendChild(newNode);
+      
+      // if (dw < 1 || dh < 1) {
+
+      //   wrap.node.animate({
+      //     width: [wrap.previous.bounds.width + 'px', wrap.bounds.width + 'px'],
+      //     height: [wrap.previous.bounds.height + 'px', wrap.bounds.height + 'px']
+      //   }, {
+      //     duration: 300,
+      //     easing: 'step-end'
+      //   })
+      // }
+
+      // img.node.animate({
+      //   left: [`${dw}px`, 0],
+      //   top: [`${dh}px`, 0],
+      //   transform: [
+      //     `translateX(${img.delta.left - dw}px) translateY(${img.delta.top - dh}px) `+
+      //     `scale(${img.delta.width}, ${img.delta.height}) `,
+      //     'none'
+      //   ],
+      //   transformOrigin: ['top left', 'top left']
+      // }, 300)
+    })
+
+    function cycle(states, action) {
+      const machine = {};
+
+      states.forEach((state, i) => {
+        machine[state] = {
+          [action]: i === states.length - 1
+            ? states[0]
+            : states[i + 1]
+        };
+      });
+
+      return machine;
+    }
+
+    const machine = cycle(['small', 'large'], 'CLICK');
+
+    const transition = (s, a) => machine[s][a];
+
+    const update = (s) => {
+      document.body.setAttribute('data-state', s);
+    }
+
+    let state = 'small';
+
+    document.body.addEventListener('click', flipping.wrap(() => {
+      state = transition(state, 'CLICK');
+      update(state);
+    }));
+  </script>
+</body>
+</html>

@@ -14,25 +14,25 @@ import {
 import { NO_DELTA, KEY_ATTR /* FOLLOW_ATTR */ } from './constants';
 import mirrorPlugin from './plugins/mirror';
 
-const selector = (parentNode: Element): Element[] => {
-  const nodes = parentNode.querySelectorAll(`[${KEY_ATTR}]`);
-  const visibleNodes = {};
+const selector = (parentElement: Element): Element[] => {
+  const elements = parentElement.querySelectorAll(`[${KEY_ATTR}]`);
+  const visibleElements = {};
   const result = [];
 
-  nodes.forEach(node => {
-    if (isHidden(node)) {
+  elements.forEach(element => {
+    if (isHidden(element)) {
       return;
     }
-    const key = node.getAttribute(KEY_ATTR);
-    visibleNodes[key] = node;
+    const key = element.getAttribute(KEY_ATTR);
+    visibleElements[key] = element;
 
-    result.push(node);
+    result.push(element);
   });
 
   return result;
 };
 const active = () => true;
-const getKey = (node: Element): string => node.getAttribute(KEY_ATTR);
+const getKey = (element: Element): string => element.getAttribute(KEY_ATTR);
 
 class Flipping<TAnimation = any> {
   public plugins: FlipPlugin[];
@@ -42,7 +42,6 @@ class Flipping<TAnimation = any> {
   public getBounds: (element: Element) => IBounds;
   public getKey: (element: Element) => string;
   public getDelta: (first: IBounds, last: IBounds) => IBounds;
-  // public onFlip?: FlipEventListener;
   public onEnter?: FlipEventListener;
   public onLeave?: FlipEventListener;
   public onRead?: (stateMap: IFlipStateMap) => void;
@@ -88,16 +87,16 @@ class Flipping<TAnimation = any> {
     };
   }
   private findParent(
-    node: Element,
+    element: Element,
     parent: Element = this.parentElement
   ): Element {
-    const parentKey = node.getAttribute('data-flip-parent');
+    const parentKey = element.getAttribute('data-flip-parent');
 
     if (!parentKey) {
       return parent;
     }
 
-    let currentParent = node.parentElement;
+    let currentParent = element.parentElement;
 
     while (currentParent && this.getKey(currentParent) !== parentKey) {
       currentParent = currentParent.parentElement;
@@ -148,7 +147,7 @@ class Flipping<TAnimation = any> {
   }
   public flip(options: IFlippingOptions = {}) {
     const parentElement = options.parent || this.parentElement;
-    const nodes = this.selectActive(parentElement);
+    const elements = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
     // const config = {
     //   onFlip: this.onFlip,
@@ -157,14 +156,17 @@ class Flipping<TAnimation = any> {
     //   ...options
     // };
 
-    nodes.forEach((node, index) => {
-      const key = this.getKey(node);
-      const childParent = this.findParent(node, parentElement);
+    elements.forEach((element, index) => {
+      const key = this.getKey(element);
+      const childParent = this.findParent(element, parentElement);
       const parentBounds = this.getBounds(childParent);
       const previous = this.states[key];
       const isPresent = previous && previous.type !== 'LEAVE';
 
-      const bounds = this.getRelativeBounds(parentBounds, this.getBounds(node));
+      const bounds = this.getRelativeBounds(
+        parentBounds,
+        this.getBounds(element)
+      );
       const delta = isPresent
         ? this.getDelta(previous.bounds, bounds)
         : undefined;
@@ -172,7 +174,7 @@ class Flipping<TAnimation = any> {
       const newState: IFlipState = {
         type: isPresent ? 'MOVE' : 'ENTER',
         key,
-        node,
+        element,
         bounds,
         delta,
         start: Date.now(),
@@ -183,7 +185,7 @@ class Flipping<TAnimation = any> {
               type: previous.type,
               bounds: previous.bounds,
               animation: previous.animation,
-              node: previous.node
+              element: previous.element
             }
           : undefined
       };
@@ -205,7 +207,7 @@ class Flipping<TAnimation = any> {
       this.states[key] = fullState[key] = {
         type: 'LEAVE',
         key,
-        node: undefined,
+        element: undefined,
         bounds: undefined,
         start: Date.now(),
         animation: undefined,
@@ -213,7 +215,7 @@ class Flipping<TAnimation = any> {
           type: prevState.type,
           bounds: prevState.bounds,
           animation: prevState.animation,
-          node: prevState.node
+          element: prevState.element
         }
       } as IFlipState;
     });

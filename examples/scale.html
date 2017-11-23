@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../dist/flipping.js"></script>
+  <style>
+    * {
+      position: relative;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #foo {
+      background-color: red;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    body[data-state="small"] #foo {
+      height: 10vh;
+      width: 10vw;
+    }
+
+    body[data-state="large"] #foo {
+      height: 30vh;
+      width: 30vw;
+      /* margin-left: -10vw; */
+      justify-content: flex-start;
+    }
+  </style>
+</head>
+
+<body data-state="small">
+  <div id="foo" data-flip-key="foo">
+    <span data-flip-key="text">Hello!</span>
+  </div>
+  <script>
+    const sheet = (() => {
+        const style = document.createElement('style');
+
+        document.head.appendChild(style);
+        console.log('yea');
+
+        return style.sheet;
+      })();
+
+      sheet.insertRule(
+        `
+        [data-flip-key]:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: inherit;
+          border: inherit;
+          transform: var(--flip-transform, none);
+        }
+      `,
+        0
+      );
+    const f = new Flipping();
+
+    f.onFlip(states => {
+      const id = `a${Date.now()}`;
+
+      const style = getComputedStyle(states.foo.node);
+      const { background } = style;
+      states.foo.node.style.setProperty('background', 'none');
+
+      window.sheet = sheet;
+
+      sheet.insertRule(`
+        @keyframes ${id} {
+          from {
+            transform: scale(${states.foo.delta.width}, ${states.foo.delta.height});
+          }
+          to {
+            transform: none;
+          }
+        }
+      ` );
+      sheet.insertRule(`
+          [data-flip-key="foo"]::before {
+            background: ${background};
+            animation: ${id} 1s none;
+          }
+      `, sheet.cssRules.length);
+
+      setTimeout(() => {
+        states.foo.node.style.removeProperty('background');
+      }, 1000);
+
+      states.text.node.animate([
+        {transform: `translateX(${states.text.delta.left}px)`},
+        {transform:'none'}
+      ], {duration:1000, easing: 'ease-out'});
+
+      // console.log(`scale(${states.foo.delta.width}, ${states.foo.delta.height})`);
+      // states.foo.node.animate({
+      //   '--flip-transform': [
+      //     `scale(${states.foo.delta.width}, ${states.foo.delta.height})`,
+      //     'none'
+      //   ]
+      // }, 300)
+    })
+
+    const machine = {
+      small: {
+        CLICK: 'large'
+      },
+      large: {
+        CLICK: 'small'
+      }
+    };
+
+    const t = (s, a) => machine[s][a];
+    let state = 'small';
+
+    document.body.addEventListener('click', f.wrap(() => {
+      document.body.setAttribute('data-state', (state = t(state, 'CLICK')));
+    }));
+  </script>
+</body>
+
+</html>

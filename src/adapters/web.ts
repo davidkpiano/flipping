@@ -2,11 +2,13 @@ import {
   IFlippingConfig,
   IFlipState,
   IFlipStateMap,
-  IFlipNodesMode
+  IFlipElementsStrategy
 } from '../types';
 import Flipping from '../Flipping';
 import * as animations from '../animations';
 import { mapValues, styleValue, getStaggerDelay } from '../utils';
+
+const STATE_ATTR = 'data-flip-state';
 
 interface ICustomEffectTiming {
   stagger?: number | ((index: number) => number);
@@ -17,25 +19,31 @@ type FlippingWebOptions = IFlippingConfig &
   ICustomEffectTiming;
 
 function animate(
-  mode: IFlipNodesMode,
-  nodeMap: Record<string, Element>,
+  mode: IFlipElementsStrategy,
+  elementMap: Record<string, Element>,
   options: FlippingWebOptions
 ): any {
-  const nodeAnimations = mapValues(nodeMap, (node, nodeKey) => {
-    return node.animate(
+  const elementAnimations = mapValues(elementMap,(element, key) => {
+    element.setAttribute(STATE_ATTR, 'active');
+
+    const animation = element.animate(
       [
-        mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
-        mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value))
+        mapValues(mode[key].from, (value, prop) => styleValue(prop, value)) as AnimationKeyFrame,
+        mapValues(mode[key].to, (value, prop) => styleValue(prop, value)) as AnimationKeyFrame
       ],
       options
     );
+
+    animation.onfinish = () => element.setAttribute(STATE_ATTR, 'complete');
+
+    return animation;
   });
 
   return {
     finish: () => {
-      Object.keys(nodeAnimations).forEach(nodeKey =>
-        nodeAnimations[nodeKey].finish()
-      );
+      mapValues(elementAnimations, (elementAnimation) => {
+        elementAnimation.finish()
+      });
     }
   };
 }
@@ -44,14 +52,18 @@ const slidingLayersAnimation = (
   state: IFlipState,
   options: FlippingWebOptions
 ): any => {
-  const { node } = state;
+  const { element } = state;
   const mode = animations.slide(state);
+
+  if (!mode) {
+    return;
+  }
 
   return animate(
     mode,
     {
-      node,
-      container: node.parentElement
+      element,
+      container: element.parentElement
     },
     options
   );
@@ -61,14 +73,14 @@ const scaleAnimation = (
   state: IFlipState,
   options: FlippingWebOptions = {}
 ): any => {
-  const { node } = state;
+  const { element } = state;
   const mode = animations.scale(state);
 
-  return animate(mode, { node }, options);
+  return animate(mode, { element }, options);
 };
 
 const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
-  const { node } = state;
+  const { element } = state;
 
   const timingOptions: FlippingWebOptions = {
     ...options,
@@ -77,14 +89,14 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
     fill: options.stagger ? 'both' : 'none'
   };
 
-  if (!node) {
+  if (!element) {
     return;
   }
 
   if (
-    node &&
-    node.parentElement &&
-    node.parentElement.hasAttribute('data-flip-wrap')
+    element &&
+    element.parentElement &&
+    element.parentElement.hasAttribute('data-flip-wrap')
   ) {
     return slidingLayersAnimation(state, timingOptions);
   }
@@ -105,18 +117,19 @@ function waapiOnRead(stateMap: IFlipStateMap): void {
 class FlippingWeb extends Flipping {
   static defaults: FlippingWebOptions = {
     duration: 300,
+    delay:1000,
     easing: 'ease',
     fill: 'none',
     stagger: 0,
-    getBounds: node => {
-      const bounds = Flipping.rect(node);
+    getBounds: element => {
+      const bounds = Flipping.rect(element);
 
       if (
-        node &&
-        node.parentElement &&
-        node.parentElement.hasAttribute('data-flip-wrap')
+        element &&
+        element.parentElement &&
+        element.parentElement.hasAttribute('data-flip-wrap')
       ) {
-        const wrapBounds = Flipping.rect(node.parentElement);
+        const wrapBounds = Flipping.rect(element.parentElement);
 
         bounds.width -= Math.abs(bounds.left - wrapBounds.left);
         bounds.height -= Math.abs(bounds.top - wrapBounds.top);

@@ -1,17 +1,22 @@
-import { IFlipState, IFlipNodeMode, IFlipNodesMode } from './types';
+import {
+  IFlipState,
+  IFlipElementStrategy,
+  IFlipElementsStrategy
+} from './types';
 import { matrixTranslate, matrixMultiply } from './utils';
 import * as Rematrix from 'rematrix';
 
-export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
-  const { bounds, delta, type } = state;
+export const scale = (state: IFlipState): IFlipElementsStrategy | undefined => {
+  const { bounds, delta, type, element } = state;
 
   if (type === 'ENTER') {
     return {
-      node: {
+      element: {
         from: {
-          transform: `translate(${delta ? delta.left : 0}px, ${delta
-            ? delta.top
-            : 0}px) scale(.01)`
+          transform: `translate(
+            ${delta ? delta.left : 0}px,
+            ${delta ? delta.top : 0}px)
+            scale(.01)`
         },
         to: {
           transform: 'scale(1)'
@@ -20,7 +25,10 @@ export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
     };
   }
 
-  const scaleChanged = delta.width !== 1 || delta.height !== 1;
+  const preventScale = element.hasAttribute('data-flip-no-scale');
+
+  const scaleChanged =
+    !preventScale && (delta.width !== 1 || delta.height !== 1);
   const translate = Rematrix.translate(delta.left, delta.top);
   const scale = scaleChanged
     ? Rematrix.scale(delta.width, delta.height)
@@ -32,7 +40,7 @@ export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
     scale
   );
 
-  const nodePos: IFlipNodeMode = {
+  const elementPosition: IFlipElementStrategy = {
     from: {
       x: delta.left,
       y: delta.top,
@@ -48,11 +56,11 @@ export const scale = (state: IFlipState): IFlipNodesMode | undefined => {
   };
 
   return {
-    node: nodePos
+    element: elementPosition
   };
 };
 
-export const slide = (state: IFlipState): IFlipNodesMode => {
+export const slide = (state: IFlipState): IFlipElementsStrategy => {
   const { delta, previous, bounds } = state;
 
   if (!previous) {
@@ -62,7 +70,7 @@ export const slide = (state: IFlipState): IFlipNodesMode => {
   const height = Math.max(previous.bounds.height, bounds.height);
   const width = Math.max(previous.bounds.width, bounds.width);
 
-  const nodePos: IFlipNodeMode = {
+  const elementPosition: IFlipElementStrategy = {
     from: {
       height,
       width,
@@ -74,7 +82,7 @@ export const slide = (state: IFlipState): IFlipNodesMode => {
       transformOrigin: 'top left'
     }
   };
-  const containerPos: IFlipNodeMode = {
+  const containerPosition: IFlipElementStrategy = {
     from: {
       height,
       width,
@@ -91,44 +99,50 @@ export const slide = (state: IFlipState): IFlipNodesMode => {
   const deltaHeight = bounds.height - previous.bounds.height;
 
   if (deltaWidth > 0) {
-    containerPos.from.x = -deltaWidth + delta.left;
-    containerPos.to.x = 0;
-    nodePos.from.x = deltaWidth;
-    nodePos.to.x = 0;
+    containerPosition.from.x = -deltaWidth + delta.left;
+    containerPosition.to.x = 0;
+    elementPosition.from.x = deltaWidth;
+    elementPosition.to.x = 0;
   } else {
-    containerPos.from.x = 0;
-    containerPos.to.x = deltaWidth - delta.left;
-    nodePos.from.x = 0;
-    nodePos.to.x = -deltaWidth;
+    containerPosition.from.x = 0;
+    containerPosition.to.x = deltaWidth - delta.left;
+    elementPosition.from.x = 0;
+    elementPosition.to.x = -deltaWidth;
   }
 
   if (deltaHeight > 0) {
-    containerPos.from.y = -deltaHeight + delta.top;
-    containerPos.to.y = 0;
-    nodePos.from.y = deltaHeight;
-    nodePos.to.y = 0;
+    containerPosition.from.y = -deltaHeight + delta.top;
+    containerPosition.to.y = 0;
+    elementPosition.from.y = deltaHeight;
+    elementPosition.to.y = 0;
   } else {
-    containerPos.from.y = 0;
-    containerPos.to.y = deltaHeight - delta.top;
-    nodePos.from.y = 0;
-    nodePos.to.y = -deltaHeight;
+    containerPosition.from.y = 0;
+    containerPosition.to.y = deltaHeight - delta.top;
+    elementPosition.from.y = 0;
+    elementPosition.to.y = -deltaHeight;
   }
 
-  const nodeFrom = matrixTranslate(nodePos.from.x, nodePos.from.y);
-  const nodeTo = matrixTranslate(nodePos.to.x, nodePos.to.y);
-  const containerFrom = matrixTranslate(
-    containerPos.from.x,
-    containerPos.from.y
+  const elementFrom = matrixTranslate(
+    elementPosition.from.x,
+    elementPosition.from.y
   );
-  const containerTo = matrixTranslate(containerPos.to.x, containerPos.to.y);
+  const elementTo = matrixTranslate(elementPosition.to.x, elementPosition.to.y);
+  const containerFrom = matrixTranslate(
+    containerPosition.from.x,
+    containerPosition.from.y
+  );
+  const containerTo = matrixTranslate(
+    containerPosition.to.x,
+    containerPosition.to.y
+  );
 
-  nodePos.from.transform = `matrix3d(${nodeFrom})`;
-  nodePos.to.transform = `matrix3d(${nodeTo})`;
-  containerPos.from.transform = `matrix3d(${containerFrom})`;
-  containerPos.to.transform = `matrix3d(${containerTo})`;
+  elementPosition.from.transform = `matrix3d(${elementFrom})`;
+  elementPosition.to.transform = `matrix3d(${elementTo})`;
+  containerPosition.from.transform = `matrix3d(${containerFrom})`;
+  containerPosition.to.transform = `matrix3d(${containerTo})`;
 
   return {
-    node: nodePos,
-    container: containerPos
+    element: elementPosition,
+    container: containerPosition
   };
 };

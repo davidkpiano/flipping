@@ -7,9 +7,9 @@ declare type Element = {
   _setRect: (rect: IRect) => void;
 };
 
-function mockGetBounds(node: Element) {
+function mockGetBounds(element: Element) {
   return {
-    ...node.getBoundingClientRect()
+    ...element.getBoundingClientRect()
   };
 }
 
@@ -36,9 +36,9 @@ function createMockElement(key: string | undefined, rect: IRect): Element {
   };
 }
 
-function createMockFlip(node: Element, options) {
+function createMockFlip(element: Element, options) {
   return new Flipping({
-    selector: () => [node as Element],
+    selector: () => [element as Element],
     getBounds: mockGetBounds,
     parent: createMockElement(undefined, {
       top: 0,
@@ -56,18 +56,18 @@ describe('Flipping', () => {
   });
 
   describe('reading', () => {
-    it('should provide the current bounds of the node', done => {
-      const mockNode = createMockElement('test', {
+    it('should provide the current bounds of the element', done => {
+      const mockElement = createMockElement('test', {
         top: 0,
         left: 0,
         width: 10,
         height: 10
       });
-      const MockFlip = createMockFlip(mockNode, {
+      const MockFlip = createMockFlip(mockElement, {
         onRead: states => {
           assert.deepEqual(
             states.test.bounds,
-            mockNode.getBoundingClientRect()
+            mockElement.getBoundingClientRect()
           );
           done();
         }
@@ -78,14 +78,14 @@ describe('Flipping', () => {
   });
 
   describe('flipping', () => {
-    it('should provide the correct first, last and delta of the node', done => {
-      const mockNode = createMockElement('test', {
+    it('should provide the correct first, last and delta of the element', done => {
+      const mockElement = createMockElement('test', {
         top: 0,
         left: 0,
         width: 100,
         height: 100
       });
-      const MockFlip = createMockFlip(mockNode, {
+      const MockFlip = createMockFlip(mockElement, {
         onFlip: states => {
           assert.deepEqual(
             states.test.previous.bounds,
@@ -123,7 +123,7 @@ describe('Flipping', () => {
 
       MockFlip.read();
 
-      mockNode._setRect({
+      mockElement._setRect({
         top: 20,
         left: 30,
         height: 200,

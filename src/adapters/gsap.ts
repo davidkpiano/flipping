@@ -2,7 +2,7 @@ import Flipping from '../Flipping';
 import {
   IFlippingConfig,
   IFlipState,
-  IFlipNodesMode,
+  IFlipElementsStrategy,
   IFlipStateMap
 } from '../types';
 import * as animations from '../animations';
@@ -14,54 +14,54 @@ type GSAPAnimation = {
 };
 
 function animate(
-  mode: IFlipNodesMode,
-  nodeMap: Record<string, Element>,
+  mode: IFlipElementsStrategy,
+  elementMap: Record<string, Element>,
   options
 ): any {
-  const nodeAnimations = mapValues(nodeMap, (node, nodeKey) => {
+  const elementAnimations = mapValues(elementMap, (element, key) => {
     return GSAP.TweenLite
       .fromTo(
-        node,
+        element,
         options.duration,
-        mapValues(mode[nodeKey].from, (value, prop) => styleValue(prop, value)),
-        mapValues(mode[nodeKey].to, (value, prop) => styleValue(prop, value))
+        mapValues(mode[key].from, (value, prop) => styleValue(prop, value)),
+        mapValues(mode[key].to, (value, prop) => styleValue(prop, value))
       )
       .delay(options.delay);
   });
 
   return {
     finish: () => {
-      Object.keys(nodeAnimations).forEach(nodeKey => {
-        GSAP.TweenLite.set(nodeMap[nodeKey], { clearProps: 'all' });
-        nodeAnimations[nodeKey].kill();
+      Object.keys(elementAnimations).forEach(key => {
+        GSAP.TweenLite.set(elementMap[key], { clearProps: 'all' });
+        elementAnimations[key].kill();
       });
     }
   };
 }
 
 const slidingLayersAnimation = (state: IFlipState, options): any => {
-  const { node } = state;
+  const { element } = state;
   const mode = animations.slide(state);
 
   return animate(
     mode,
     {
-      node,
-      container: node.parentElement
+      element,
+      container: element.parentElement
     },
     options
   );
 };
 
 const scaleAnimation = (state: IFlipState, options: any = {}): any => {
-  const { node } = state;
-  const mode = animations.scale(state);
+  const { element } = state;
+  const strategy = animations.scale(state);
 
-  return animate(mode, { node }, options);
+  return animate(strategy, { element }, options);
 };
 
 const autoAnimation = (state: IFlipState, options): any => {
-  const { node } = state;
+  const { element } = state;
 
   const timingOptions = {
     ...options,
@@ -71,14 +71,14 @@ const autoAnimation = (state: IFlipState, options): any => {
       1000
   };
 
-  if (!node) {
+  if (!element) {
     return;
   }
 
   if (
-    node &&
-    node.parentElement &&
-    node.parentElement.hasAttribute('data-flip-wrap')
+    element &&
+    element.parentElement &&
+    element.parentElement.hasAttribute('data-flip-wrap')
   ) {
     return slidingLayersAnimation(state, timingOptions);
   }
@@ -99,15 +99,15 @@ function gsapOnRead(stateMap: IFlipStateMap<GSAPAnimation>): void {
 const defaultOptions: IFlippingConfig & Record<string, any> = {
   duration: 0.3,
   ease: GSAP.Power1.easeInOut,
-  getBounds: node => {
-    const bounds = Flipping.rect(node);
+  getBounds: element => {
+    const bounds = Flipping.rect(element);
 
     if (
-      node &&
-      node.parentElement &&
-      node.parentElement.hasAttribute('data-flip-wrap')
+      element &&
+      element.parentElement &&
+      element.parentElement.hasAttribute('data-flip-wrap')
     ) {
-      const wrapBounds = Flipping.rect(node.parentElement);
+      const wrapBounds = Flipping.rect(element.parentElement);
 
       bounds.width -= Math.abs(bounds.left - wrapBounds.left);
       bounds.height -= Math.abs(bounds.top - wrapBounds.top);
