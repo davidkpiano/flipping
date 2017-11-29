@@ -75,4 +75,5 @@ export interface IFlipState<TAnimation = any> {
     | Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'element'>
     | undefined;
   start: number;
+  parent: IFlipState<TAnimation> | undefined;
 }

@@ -159,6 +159,8 @@ class Flipping<TAnimation = any> {
     elements.forEach((element, index) => {
       const key = this.getKey(element);
       const childParent = this.findParent(element, parentElement);
+      const childParentKey = this.getKey(childParent);
+      const childParentState = fullState[childParentKey];
       const parentBounds = this.getBounds(childParent);
       const previous = this.states[key];
       const isPresent = previous && previous.type !== 'LEAVE';
@@ -187,7 +189,8 @@ class Flipping<TAnimation = any> {
               animation: previous.animation,
               element: previous.element
             }
-          : undefined
+          : undefined,
+        parent: childParentState
       };
 
       this.states[key] = fullState[key] = newState;
@@ -254,6 +257,12 @@ class Flipping<TAnimation = any> {
     };
   }
   static rect = rect;
+  static willScale = (state: IFlipState): boolean => {
+    return state && state.element && !state.element.hasAttribute('data-noflip') &&  (state.delta.width !== 1 || state.delta.height !== 1);
+  }
+  static willMove = (state: IFlipState): boolean => {
+    return state && (state.delta.top !== 0 || state.delta.left !== 0);
+  }
 }
 
 export default Flipping;

@@ -38,7 +38,7 @@
     "ts-loader": "^2.2.2",
     "ts-node": "^3.0.2",
     "tslint": "^5.5.0",
-    "typescript": "^2.4.1",
+    "typescript": "^2.6.2",
     "webpack": "^2.3.2"
   },
   "dependencies": {
