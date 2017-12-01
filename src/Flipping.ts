@@ -256,7 +256,7 @@ class Flipping<TAnimation = any> {
 
     return Flipping.progress(delta, fraction);
   }
-  static progress(delta: IBounds, fraction: number): IBounds {
+  static progress(delta: IBounds | undefined, fraction: number): IBounds {
     if (!delta) {
       return NO_DELTA;
     }

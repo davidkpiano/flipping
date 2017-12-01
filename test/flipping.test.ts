@@ -20,7 +20,7 @@ interface IRect {
   height: number;
 }
 
-function createMockElement(key: string | undefined, rect: IRect): Element {
+function createMockElement(key: string, rect: IRect): Element {
   let currentRect = rect;
 
   return {
@@ -40,7 +40,7 @@ function createMockFlip(element: Element, options) {
   return new Flipping({
     selector: () => [element as Element],
     getBounds: mockGetBounds,
-    parent: createMockElement(undefined, {
+    parent: createMockElement('parent', {
       top: 0,
       left: 0,
       width: 1000,
@@ -73,7 +73,7 @@ describe('Flipping', () => {
         }
       });
 
-      MockFlip.read(null);
+      MockFlip.read();
     });
   });
 
