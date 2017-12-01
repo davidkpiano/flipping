@@ -55,7 +55,7 @@ const slidingLayersAnimation = (
   const { element } = state;
   const mode = animations.slide(state);
 
-  if (!mode) {
+  if (!mode || !element || !element.parentElement) {
     return;
   }
 
@@ -76,6 +76,8 @@ const scaleAnimation = (
   const { element } = state;
   const mode = animations.scale(state);
 
+  if (!mode || !element) { return; }
+
   return animate(mode, { element }, options);
 };
 
@@ -85,7 +87,7 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
   const timingOptions: FlippingWebOptions = {
     ...options,
     delay:
-      +(options.delay || 0) + getStaggerDelay(state.index, options.stagger),
+      +(options.delay || 0) + getStaggerDelay(state.index, options.stagger || 0),
     fill: options.stagger ? 'both' : 'none'
   };
 
@@ -117,26 +119,10 @@ function waapiOnRead(stateMap: IFlipStateMap): void {
 class FlippingWeb extends Flipping {
   static defaults: FlippingWebOptions = {
     duration: 300,
-    delay:1000,
+    delay: 0,
     easing: 'ease',
     fill: 'none',
-    stagger: 0,
-    getBounds: element => {
-      const bounds = Flipping.rect(element);
-
-      if (
-        element &&
-        element.parentElement &&
-        element.parentElement.hasAttribute('data-flip-wrap')
-      ) {
-        const wrapBounds = Flipping.rect(element.parentElement);
-
-        bounds.width -= Math.abs(bounds.left - wrapBounds.left);
-        bounds.height -= Math.abs(bounds.top - wrapBounds.top);
-      }
-
-      return bounds;
-    }
+    stagger: 0
   };
 
   static animate = {

@@ -70,7 +70,7 @@ export const rect = (element: Element): IBounds => {
     left,
     width,
     height,
-    transform: getComputedStyle(element).transform
+    transform: getComputedStyle(element).transform || undefined
   };
 };
 export function isHidden(element: Element) {

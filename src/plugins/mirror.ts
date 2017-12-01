@@ -22,7 +22,7 @@ export default function mirrorPlugin(
         while (
           candidateElement &&
           (!candidateElement.hasAttribute('data-flip-key') ||
-            states[candidateElement.getAttribute('data-flip-key')].type !== 'MOVE')
+            states[candidateElement.getAttribute('data-flip-key') as string].type !== 'MOVE')
         ) {
           candidateElement = candidateElement.nextElementSibling;
         }
@@ -30,7 +30,7 @@ export default function mirrorPlugin(
         if (candidateElement) {
           nextStates[key] = {
             ...state,
-            delta: states[candidateElement.getAttribute('data-flip-key')].delta
+            delta: states[candidateElement.getAttribute('data-flip-key') as string].delta
           };
         } else {
           nextStates[key] = state;
@@ -41,5 +41,5 @@ export default function mirrorPlugin(
     }
   });
 
-  return nextStates;
+  return nextStates as IFlipStateMap;
 }

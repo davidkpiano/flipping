@@ -17,13 +17,17 @@ import mirrorPlugin from './plugins/mirror';
 const selector = (parentElement: Element): Element[] => {
   const elements = parentElement.querySelectorAll(`[${KEY_ATTR}]`);
   const visibleElements = {};
-  const result = [];
+  const result: Element[] = [];
 
   elements.forEach(element => {
     if (isHidden(element)) {
       return;
     }
     const key = element.getAttribute(KEY_ATTR);
+    if (!key) {
+      return;
+    }
+
     visibleElements[key] = element;
 
     result.push(element);
@@ -32,7 +36,7 @@ const selector = (parentElement: Element): Element[] => {
   return result;
 };
 const active = () => true;
-const getKey = (element: Element): string => element.getAttribute(KEY_ATTR);
+const getKey = (element: Element): string | undefined => element.getAttribute(KEY_ATTR) || undefined;
 
 class Flipping<TAnimation = any> {
   public plugins: FlipPlugin[];
@@ -40,7 +44,7 @@ class Flipping<TAnimation = any> {
   public active: (element: Element) => boolean;
   private selectActive: (element) => Element[];
   public getBounds: (element: Element) => IBounds;
-  public getKey: (element: Element) => string;
+  public getKey: (element: Element) => string | undefined;
   public getDelta: (first: IBounds, last: IBounds) => IBounds;
   public onEnter?: FlipEventListener;
   public onLeave?: FlipEventListener;
@@ -91,15 +95,16 @@ class Flipping<TAnimation = any> {
     parent: Element = this.parentElement
   ): Element {
     const parentKey = element.getAttribute('data-flip-parent');
-
-    if (!parentKey) {
-      return parent;
-    }
-
     let currentParent = element.parentElement;
 
-    while (currentParent && this.getKey(currentParent) !== parentKey) {
-      currentParent = currentParent.parentElement;
+    if (!parentKey) {
+      while (currentParent && !currentParent.hasAttribute('data-flip-key')) {
+        currentParent = currentParent.parentElement;
+      }
+    } else {
+      while (currentParent && this.getKey(currentParent) !== parentKey) {
+        currentParent = currentParent.parentElement;
+      }
     }
 
     return currentParent || parent;
@@ -133,7 +138,7 @@ class Flipping<TAnimation = any> {
       'flip',
       key
         ? (stateMap: IFlipStateMap) => {
-            const state = stateMap[key];
+            const state = stateMap[key as string];
 
             if (state) {
               (listener as FlipStateEventListener)(state);
@@ -158,9 +163,12 @@ class Flipping<TAnimation = any> {
 
     elements.forEach((element, index) => {
       const key = this.getKey(element);
+
+      if (!key) { return; }
+
       const childParent = this.findParent(element, parentElement);
       const childParentKey = this.getKey(childParent);
-      const childParentState = fullState[childParentKey];
+      const childParentState = childParentKey ? fullState[childParentKey] : undefined;
       const parentBounds = this.getBounds(childParent);
       const previous = this.states[key];
       const isPresent = previous && previous.type !== 'LEAVE';
@@ -169,7 +177,7 @@ class Flipping<TAnimation = any> {
         parentBounds,
         this.getBounds(element)
       );
-      const delta = isPresent
+      const delta = isPresent && previous && previous.bounds
         ? this.getDelta(previous.bounds, bounds)
         : undefined;
 
@@ -200,12 +208,12 @@ class Flipping<TAnimation = any> {
       return this.dispatch('read', fullState);
     }
 
-    Object.keys(this.states).forEach(key => {
-      const prevState = this.states[key];
-
+    Object.keys(this.states).forEach((key, index) => {
       if (fullState[key]) {
         return;
       }
+      
+      const prevState = this.states[key];
 
       this.states[key] = fullState[key] = {
         type: 'LEAVE',
@@ -214,6 +222,9 @@ class Flipping<TAnimation = any> {
         bounds: undefined,
         start: Date.now(),
         animation: undefined,
+        delta: undefined,
+        index,
+        parent: undefined,
         previous: {
           type: prevState.type,
           bounds: prevState.bounds,
@@ -239,8 +250,11 @@ class Flipping<TAnimation = any> {
       return result;
     };
   }
-  public progress(key: string, fraction: number): IBounds {
-    return Flipping.progress(this.states[key].delta, fraction);
+  public progress(key: string, fraction: number): IBounds | undefined {
+    const { delta } = this.states[key];
+    if (!delta) { return; }
+
+    return Flipping.progress(delta, fraction);
   }
   static progress(delta: IBounds, fraction: number): IBounds {
     if (!delta) {
@@ -258,9 +272,10 @@ class Flipping<TAnimation = any> {
   }
   static rect = rect;
   static willScale = (state: IFlipState): boolean => {
-    return state && state.element && !state.element.hasAttribute('data-noflip') &&  (state.delta.width !== 1 || state.delta.height !== 1);
+    return !!(state && state.element && !state.element.hasAttribute('data-noflip') && state.delta && (state.delta.width !== 1 || state.delta.height !== 1));
   }
   static willMove = (state: IFlipState): boolean => {
+    if (!state || !state.delta) { return false; }
     return state && (state.delta.top !== 0 || state.delta.left !== 0);
   }
 }

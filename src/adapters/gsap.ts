@@ -13,20 +13,29 @@ type GSAPAnimation = {
   finish: () => void;
 };
 
+interface IGSAPOptions {
+  duration: number;
+  delay?: number;
+}
+
 function animate(
   mode: IFlipElementsStrategy,
   elementMap: Record<string, Element>,
-  options
+  options: IGSAPOptions
 ): any {
   const elementAnimations = mapValues(elementMap, (element, key) => {
-    return GSAP.TweenLite
-      .fromTo(
-        element,
-        options.duration,
-        mapValues(mode[key].from, (value, prop) => styleValue(prop, value)),
-        mapValues(mode[key].to, (value, prop) => styleValue(prop, value))
-      )
-      .delay(options.delay);
+    const animation = GSAP.TweenLite
+    .fromTo(
+      element,
+      options.duration,
+      mapValues(mode[key].from, (value, prop) => styleValue(prop, value)),
+      mapValues(mode[key].to, (value, prop) => styleValue(prop, value))
+    )
+    .delay(options.delay || 0)
+    .eventCallback('onComplete', () => {
+      GSAP.TweenLite.set(element, { clearProps: 'all' });
+      animation.kill();
+    });
   });
 
   return {
@@ -41,7 +50,11 @@ function animate(
 
 const slidingLayersAnimation = (state: IFlipState, options): any => {
   const { element } = state;
+  if (!element || !element.parentElement) { return; }
+
   const mode = animations.slide(state);
+
+  if (!mode) { return; }
 
   return animate(
     mode,
@@ -56,6 +69,8 @@ const slidingLayersAnimation = (state: IFlipState, options): any => {
 const scaleAnimation = (state: IFlipState, options: any = {}): any => {
   const { element } = state;
   const strategy = animations.scale(state);
+
+  if (!strategy || !element) { return; }
 
   return animate(strategy, { element }, options);
 };
@@ -97,24 +112,8 @@ function gsapOnRead(stateMap: IFlipStateMap<GSAPAnimation>): void {
 }
 
 const defaultOptions: IFlippingConfig & Record<string, any> = {
-  duration: 0.3,
-  ease: GSAP.Power1.easeInOut,
-  getBounds: element => {
-    const bounds = Flipping.rect(element);
-
-    if (
-      element &&
-      element.parentElement &&
-      element.parentElement.hasAttribute('data-flip-wrap')
-    ) {
-      const wrapBounds = Flipping.rect(element.parentElement);
-
-      bounds.width -= Math.abs(bounds.left - wrapBounds.left);
-      bounds.height -= Math.abs(bounds.top - wrapBounds.top);
-    }
-
-    return bounds;
-  }
+  duration: 300,
+  ease: GSAP.Power1.easeInOut
 };
 
 class FlippingGsap extends Flipping<GSAPAnimation> {

@@ -5,7 +5,8 @@
     "allowSyntheticDefaultImports": true,
     "lib": ["es2015", "dom.iterable"],
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "strictNullChecks": true
   },
   "awesomeTypescriptLoaderOptions": {
     "useBabel": true,

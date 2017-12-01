@@ -1,8 +1,8 @@
 export interface IBounds {
-  top?: number;
-  left?: number;
-  width?: number;
-  height?: number;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
   transform?: string;
 }
 
@@ -47,12 +47,12 @@ export interface IFlipElementStrategy {
   from: {
     x?: number;
     y?: number;
-    [key: string]: string | number;
+    [key: string]: string | number | undefined;
   };
   to: {
     x?: number;
     y?: number;
-    [key: string]: string | number;
+    [key: string]: string | number | undefined;
   };
 }
 
@@ -67,7 +67,7 @@ export interface IFlipState<TAnimation = any> {
   type: IFlipStateType;
   key: string;
   element: Element | undefined;
-  bounds: IBounds;
+  bounds: IBounds | undefined;
   delta: IBounds | undefined;
   animation: TAnimation;
   index: number;

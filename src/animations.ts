@@ -9,6 +9,8 @@ import * as Rematrix from 'rematrix';
 export const scale = (state: IFlipState): IFlipElementsStrategy | undefined => {
   const { bounds, delta, type, element } = state;
 
+  if (!element || !delta || !bounds) { return undefined; }
+
   if (type === 'ENTER') {
     return {
       element: {
@@ -51,7 +53,7 @@ export const scale = (state: IFlipState): IFlipElementsStrategy | undefined => {
       x: bounds.left,
       y: bounds.top,
       ...transformOrigin ? { transformOrigin } : undefined,
-      transform: bounds.transform
+      transform: bounds.transform || 'none'
     }
   };
 
@@ -60,10 +62,10 @@ export const scale = (state: IFlipState): IFlipElementsStrategy | undefined => {
   };
 };
 
-export const slide = (state: IFlipState): IFlipElementsStrategy => {
+export const slide = (state: IFlipState): IFlipElementsStrategy | undefined => {
   const { delta, previous, bounds } = state;
 
-  if (!previous) {
+  if (!previous || !previous.bounds || !bounds) {
     return;
   }
 
@@ -97,6 +99,8 @@ export const slide = (state: IFlipState): IFlipElementsStrategy => {
 
   const deltaWidth = bounds.width - previous.bounds.width;
   const deltaHeight = bounds.height - previous.bounds.height;
+
+  if (!delta) { return; }
 
   if (deltaWidth > 0) {
     containerPosition.from.x = -deltaWidth + delta.left;
