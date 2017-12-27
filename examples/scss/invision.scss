@@ -1,0 +1,165 @@
+#app {
+  outline: 1px solid;
+  width: 280px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.ui-card {
+  width: 225px;
+  // height: 310px;
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: 220px 1fr;
+  border-radius: .25rem;
+
+  + .ui-card {
+    margin-left: 1rem;
+  }
+
+  .ui-feature {
+    grid-row: 1 / 2;
+  }
+  
+  .ui-content {
+    grid-row: 2 / 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1rem;
+    z-index: 1;
+  }
+
+  > .ui-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: inherit;
+    grid-template-rows: inherit;
+    z-index: 0;
+
+    .ui-bg-color {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: white;
+      box-shadow: 0 0 1rem rgba(black, .2);
+      border-radius: .25rem;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    > .ui-bg-img {
+      grid-row: 1 / 2;
+      background-color: black;
+      border-radius: .25rem;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
+.ui-title, .ui-subtitle {
+  font-size: .75rem;
+  display: inline-block;
+}
+
+[data-state="a"] #app {
+  .ui-items {
+    position: absolute;
+    top: 100%;
+    animation: fade-out .2s both;
+    @keyframes fade-out {
+      from { 
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+  }
+
+  .ui-content {
+    height: 90px;
+  }
+}
+
+.ui-cards {
+  font-family: Proxima Nova, sans-serif;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem;
+
+  &[data-flip-state="active"] {
+    overflow: visible;
+  }
+
+  > .ui-card {
+    flex-shrink: 0;
+  }
+}
+
+[data-state="b"] #app {
+  .ui-cards, .ui-card.active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+  
+  .ui-card.active .ui-content {
+    justify-content: flex-start;
+  }
+
+  .ui-card:not(.active) {
+    display: none;
+  }
+  
+  .ui-items {
+    display: block;
+    animation: fade-in .2s .2s both;
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  }
+}
+
+.ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
+  position: relative;
+}

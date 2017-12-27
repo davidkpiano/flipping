@@ -73,10 +73,10 @@ export const rect = (element: Element): IBounds => {
     transform: getComputedStyle(element).transform || undefined
   };
 };
-export function isHidden(element: Element) {
+export function isVisible(element: Element) {
   const { width, height } = rect(element);
 
-  return width === 0 && height === 0;
+  return !(width === 0 && height === 0);
 }
 export function getDelta(a: IBounds, b: IBounds): IBounds {
   if (!a) {

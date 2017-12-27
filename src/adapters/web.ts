@@ -19,30 +19,36 @@ type FlippingWebOptions = IFlippingConfig &
   ICustomEffectTiming;
 
 function animate(
-  mode: IFlipElementsStrategy,
+  strategy: IFlipElementsStrategy,
   elementMap: Record<string, Element>,
   options: FlippingWebOptions
 ): any {
-  const elementAnimations = mapValues(elementMap,(element, key) => {
-    element.setAttribute(STATE_ATTR, 'active');
+  const elementAnimations = mapValues(elementMap, (element, key) => {
+    requestAnimationFrame(() => element.setAttribute(STATE_ATTR, 'active'));
 
     const animation = element.animate(
       [
-        mapValues(mode[key].from, (value, prop) => styleValue(prop, value)) as AnimationKeyFrame,
-        mapValues(mode[key].to, (value, prop) => styleValue(prop, value)) as AnimationKeyFrame
+        mapValues(strategy[key].from, (value, prop) =>
+          styleValue(prop, value)
+        ) as AnimationKeyFrame,
+        mapValues(strategy[key].to, (value, prop) =>
+          styleValue(prop, value)
+        ) as AnimationKeyFrame
       ],
       options
     );
 
-    animation.onfinish = () => element.setAttribute(STATE_ATTR, 'complete');
+    animation.onfinish = () => {
+      element.setAttribute(STATE_ATTR, 'complete');
+    };
 
     return animation;
   });
 
   return {
     finish: () => {
-      mapValues(elementAnimations, (elementAnimation) => {
-        elementAnimation.finish()
+      mapValues(elementAnimations, elementAnimation => {
+        elementAnimation.finish();
       });
     }
   };
@@ -76,7 +82,9 @@ const scaleAnimation = (
   const { element } = state;
   const mode = animations.scale(state);
 
-  if (!mode || !element) { return; }
+  if (!mode || !element) {
+    return;
+  }
 
   return animate(mode, { element }, options);
 };
@@ -87,7 +95,8 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
   const timingOptions: FlippingWebOptions = {
     ...options,
     delay:
-      +(options.delay || 0) + getStaggerDelay(state.index, options.stagger || 0),
+      +(options.delay || 0) +
+      getStaggerDelay(state.index, options.stagger || 0),
     fill: options.stagger ? 'both' : 'none'
   };
 
@@ -139,15 +148,6 @@ class FlippingWeb extends Flipping {
 
     super({
       onRead: waapiOnRead,
-      onEnter: stateMap => {
-        Object.keys(stateMap).forEach(key => {
-          const animation = FlippingWeb.animate.auto(
-            stateMap[key],
-            optionsWithDefaults
-          );
-          this.setAnimation(key, animation);
-        });
-      },
       onFlip: stateMap => {
         Object.keys(stateMap).forEach(key => {
           const animation = FlippingWeb.animate.auto(

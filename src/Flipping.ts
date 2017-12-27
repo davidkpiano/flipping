@@ -1,5 +1,5 @@
 import * as mitt from 'mitt';
-import { rect, isHidden, getDelta } from './utils';
+import { rect, isVisible, getDelta } from './utils';
 import {
   IBounds,
   IFlippingConfig,
@@ -20,7 +20,7 @@ const selector = (parentElement: Element): Element[] => {
   const result: Element[] = [];
 
   elements.forEach(element => {
-    if (isHidden(element)) {
+    if (!isVisible(element)) {
       return;
     }
     const key = element.getAttribute(KEY_ATTR);
@@ -42,7 +42,7 @@ class Flipping<TAnimation = any> {
   public plugins: FlipPlugin[];
   public selector: (element: Element) => Element[];
   public active: (element: Element) => boolean;
-  private selectActive: (element) => Element[];
+  private activeSelector: (element) => Element[];
   public getBounds: (element: Element) => IBounds;
   public getKey: (element: Element) => string | undefined;
   public getDelta: (first: IBounds, last: IBounds) => IBounds;
@@ -57,7 +57,7 @@ class Flipping<TAnimation = any> {
   constructor(options: IFlippingConfig & { [key: string]: any } = {}) {
     this.selector = options.selector || selector;
     this.active = options.active || active;
-    this.selectActive = this.selector;
+    this.activeSelector = options.activeSelector || isVisible;
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
     this.getKey = options.getKey || getKey;
@@ -89,6 +89,27 @@ class Flipping<TAnimation = any> {
       top: childBounds.top - parentBounds.top,
       left: childBounds.left - parentBounds.left
     };
+  }
+  private selectActive(parentElement: Element): Element[] {
+    const elements = parentElement.querySelectorAll(`[${KEY_ATTR}]`);
+    const activeElements = {};
+    const result: Element[] = [];
+
+    elements.forEach(element => {
+      if (!this.activeSelector(element)) {
+        return;
+      }
+      const key = element.getAttribute(KEY_ATTR);
+      if (!key) {
+        return;
+      }
+
+      activeElements[key] = element;
+
+      result.push(element);
+    });
+
+    return result;
   }
   private findParent(
     element: Element,

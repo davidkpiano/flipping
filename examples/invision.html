@@ -9,29 +9,54 @@
   <link rel="stylesheet" href="css/invision.css">
 </head>
 
-<body>
-  <input type="checkbox" name="" id="check">
-  <div id="app">
+<body data-state="a">
+  <input type="checkbox" name="" id="check" checked>
+  <div id="app" data-flip-key="app">
     <header class="ui-header"></header>
-    <div class="ui-cards">
-      <div class="ui-card" data-flip-wrap>
-        <div class="ui-layer" data-flip-key="card" data-flip-no-scale style="background:#bbb">
-          <div class="ui-feature" data-flip-key="feature" data-flip-parent="card"></div>
-          <div class="ui-content" data-flip-key="content" data-flip-no-scale data-flip-parent="card" style="background:#666">
-            <div class="ui-title" data-flip-key="title" data-flip-no-scale data-flip-parent="content">
-              InVision iOS
-            </div>
-            <div class="ui-subtitle" data-flip-key="subtitle" data-flip-no-scale>
-              24 Documents
-            </div>
-            <ul class="ui-items">
-              <li class="ui-item">Something 1</li>
-              <li class="ui-item">Something 2</li>
-              <li class="ui-item">Something 3</li>
-              <li class="ui-item">Something 4</li>
-              <li class="ui-item">Something 5</li>
-            </ul>
+    <div class="ui-cards" data-flip-no-scale data-flip-key="cards">
+      <div class="ui-card" data-flip-no-scale data-flip-key="card">
+        <div class="ui-feature" data-flip-no-scale data-flip-key="feature"></div>
+        <div class="ui-content" data-flip-no-scale data-flip-key="content">
+          <div class="ui-title" data-flip-no-scale data-flip-key="title">
+            InVision iOS
           </div>
+          <div class="ui-subtitle" data-flip-no-scale data-flip-key="subtitle">
+            24 Documents
+          </div>
+          <ul class="ui-items" data-flip-no-scale data-flip-key="items">
+            <li class="ui-item">Something 1</li>
+            <li class="ui-item">Something 2</li>
+            <li class="ui-item">Something 3</li>
+            <li class="ui-item">Something 4</li>
+            <li class="ui-item">Something 5</li>
+          </ul>
+        </div>
+        <div class="ui-bg">
+          <div class="ui-bg-color" data-flip-key="bg"></div>
+          <div class="ui-bg-img" data-flip-key="bg-img"></div>
+        </div>
+      </div>
+
+      <div class="ui-card" data-flip-no-scale data-flip-key="2card">
+        <div class="ui-feature" data-flip-no-scale data-flip-key="2feature"></div>
+        <div class="ui-content" data-flip-no-scale data-flip-key="2content">
+          <div class="ui-title" data-flip-no-scale data-flip-key="2title">
+            InVision iOS
+          </div>
+          <div class="ui-subtitle" data-flip-no-scale data-flip-key="2subtitle">
+            24 Documents
+          </div>
+          <ul class="ui-items" data-flip-no-scale data-flip-key="2items">
+            <li class="ui-item">Something 1</li>
+            <li class="ui-item">Something 2</li>
+            <li class="ui-item">Something 3</li>
+            <li class="ui-item">Something 4</li>
+            <li class="ui-item">Something 5</li>
+          </ul>
+        </div>
+        <div class="ui-bg">
+          <div class="ui-bg-color" data-flip-key="2bg"></div>
+          <div class="ui-bg-img" data-flip-key="2bg-img"></div>
         </div>
       </div>
     </div>
@@ -39,15 +64,35 @@
   </div>
   <script src="../dist/flipping.web.js"></script>
   <script>
-    const flipping = new Flipping();
+    let state = 'a';
 
-    const checkbox = document.querySelector('#check');
-
-    checkbox.addEventListener('change', () => {
-      flipping.flip();
+    const flipping = new Flipping({
+      duration: 1000,
+      activeSelector: (el) => {
+        return  state === 'a' || el.matches('.ui-cards') || el.matches('.active *') || el.classList.contains('active')
+      },
+      plugins: []
     });
     
-    flipping.read();
+    const cards = document.querySelectorAll('.ui-card')
+    const machine = {
+      a: { CLICK: 'b' },
+      b: { CLICK: 'a' }
+    };
+    
+    
+    cards.forEach(card => {
+      card.addEventListener('click', flipping.wrap(() => {
+        console.log(state);
+        state = machine[state].CLICK;
+        if (state === 'b') {          
+          const activeCard = document.querySelector('.active');
+          activeCard && activeCard.classList.toggle('active');
+          card.classList.toggle('active');
+        }
+        document.body.setAttribute('data-state', state);
+      }));
+    });
   </script>
 </body>
 
