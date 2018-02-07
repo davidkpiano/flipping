@@ -2,11 +2,11 @@
   "name": "flipping",
   "version": "0.8.0",
   "description": "Flipping awesome animations.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "start": "npm run build:watch",
     "test": "mocha -r ts-node/register test/**.test.ts",
-    "build:prod": "webpack --config webpack.config.prod.js",
+    "build:prod": "tsc && webpack --config webpack.config.prod.js",
     "build:watch": "webpack --config webpack.config.js -w",
     "examples": "npm start & node-sass -w examples/scss -o examples/css",
     "prepublish": "npm run build:prod"
@@ -17,7 +17,8 @@
   },
   "keywords": [
     "flip",
-    "animation"
+    "animation",
+    "transition"
   ],
   "author": "David <davidkpiano@gmail.com>",
   "license": "MIT",

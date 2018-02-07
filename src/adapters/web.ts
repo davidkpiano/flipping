@@ -1,22 +1,14 @@
 import {
-  IFlippingConfig,
   IFlipState,
   IFlipStateMap,
-  IFlipElementsStrategy
+  IFlipElementsStrategy,
+  FlippingWebOptions
 } from '../types';
 import Flipping from '../Flipping';
 import * as animations from '../animations';
 import { mapValues, styleValue, getStaggerDelay } from '../utils';
 
 const STATE_ATTR = 'data-flip-state';
-
-interface ICustomEffectTiming {
-  stagger?: number | ((index: number) => number);
-}
-
-type FlippingWebOptions = IFlippingConfig &
-  AnimationEffectTiming &
-  ICustomEffectTiming;
 
 function animate(
   strategy: IFlipElementsStrategy,

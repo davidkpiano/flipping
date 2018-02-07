@@ -3,20 +3,13 @@ import {
   IFlippingConfig,
   IFlipState,
   IFlipElementsStrategy,
-  IFlipStateMap
+  IFlipStateMap,
+  GSAPAnimation,
+  IGSAPOptions
 } from '../types';
 import * as animations from '../animations';
 import { mapValues, styleValue, getStaggerDelay } from '../utils';
 import * as GSAP from 'gsap';
-
-type GSAPAnimation = {
-  finish: () => void;
-};
-
-interface IGSAPOptions {
-  duration: number;
-  delay?: number;
-}
 
 function animate(
   mode: IFlipElementsStrategy,
@@ -24,18 +17,17 @@ function animate(
   options: IGSAPOptions
 ): any {
   const elementAnimations = mapValues(elementMap, (element, key) => {
-    const animation = GSAP.TweenLite
-    .fromTo(
+    const animation = GSAP.TweenLite.fromTo(
       element,
       options.duration,
       mapValues(mode[key].from, (value, prop) => styleValue(prop, value)),
       mapValues(mode[key].to, (value, prop) => styleValue(prop, value))
     )
-    .delay(options.delay || 0)
-    .eventCallback('onComplete', () => {
-      GSAP.TweenLite.set(element, { clearProps: 'all' });
-      animation.kill();
-    });
+      .delay(options.delay || 0)
+      .eventCallback('onComplete', () => {
+        GSAP.TweenLite.set(element, { clearProps: 'all' });
+        animation.kill();
+      });
   });
 
   return {
@@ -50,11 +42,15 @@ function animate(
 
 const slidingLayersAnimation = (state: IFlipState, options): any => {
   const { element } = state;
-  if (!element || !element.parentElement) { return; }
+  if (!element || !element.parentElement) {
+    return;
+  }
 
   const mode = animations.slide(state);
 
-  if (!mode) { return; }
+  if (!mode) {
+    return;
+  }
 
   return animate(
     mode,
@@ -70,7 +66,9 @@ const scaleAnimation = (state: IFlipState, options: any = {}): any => {
   const { element } = state;
   const strategy = animations.scale(state);
 
-  if (!strategy || !element) { return; }
+  if (!strategy || !element) {
+    return;
+  }
 
   return animate(strategy, { element }, options);
 };

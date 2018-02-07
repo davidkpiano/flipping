@@ -1,0 +1,15 @@
+import { IBounds } from './types';
+export declare function mapValues(object: object, iteratee: (value: any, key: string, object: object) => any): object;
+export declare function mapTwoValues(a: any, b: any, iteratee: any): {};
+export declare function matrixTranslate(x: any, y: any): any;
+export declare function matrixScale(x: any, y: any): any;
+export declare function matrixMultiply(...matrices: any[]): any;
+export declare function styleValue(prop: string, value: string | number): string | number;
+export declare function getStaggerDelay(index: number, stagger: number | ((index: number) => number)): number;
+export declare const identity: <T>(arg: T) => T;
+export declare const noop: () => void;
+export declare const rect: (element: Element) => IBounds;
+export declare function isVisible(element: Element): boolean;
+export declare function getDelta(a: IBounds, b: IBounds): IBounds;
+export declare const deltaChanged: (delta: IBounds) => boolean;
+export declare const boundsChanged: (a: IBounds, b: IBounds) => boolean;

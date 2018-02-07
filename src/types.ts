@@ -77,3 +77,20 @@ export interface IFlipState<TAnimation = any> {
   start: number;
   parent: IFlipState<TAnimation> | undefined;
 }
+
+export interface ICustomEffectTiming {
+  stagger?: number | ((index: number) => number);
+}
+
+export type FlippingWebOptions = IFlippingConfig &
+  AnimationEffectTiming &
+  ICustomEffectTiming;
+
+export type GSAPAnimation = {
+  finish: () => void;
+};
+
+export interface IGSAPOptions {
+  duration: number;
+  delay?: number;
+}

@@ -5,9 +5,9 @@ var path = require('path');
 
 module.exports = {
   entry: {
-    flipping: './src/index',
-    'flipping.web': './src/adapters/web',
-    'flipping.gsap': './src/adapters/gsap'
+    flipping: './lib/index',
+    'flipping.web': './lib/adapters/web',
+    'flipping.gsap': './lib/adapters/gsap'
   },
   output: {
     library: 'Flipping',
@@ -23,7 +23,7 @@ module.exports = {
     }
   },
   module: {
-    loaders: [{ test: /\.ts$/, loader: 'ts-loader' }],
+    loaders: [{ test: /\.ts$/, loader: 'ts-loader' }]
   },
   devtool: 'inline-source-map'
 };
