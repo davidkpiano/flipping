@@ -30,6 +30,7 @@ export interface IFlippingConfig {
   getDelta?: (Bounds) => IBounds;
   getBounds?: (element: Element) => IBounds;
   selector?: (parent: Element) => Element[];
+  attribute?: string;
   onFlip?: (state: IFlipStateMap) => void;
   onRead?: (state: IFlipStateMap) => void;
   onEnter?: (state: IFlipStateMap) => void;
@@ -94,3 +95,5 @@ export interface IGSAPOptions {
   duration: number;
   delay?: number;
 }
+
+export type FlipSelector = (element: Element) => Element[];
