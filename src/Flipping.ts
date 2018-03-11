@@ -10,12 +10,44 @@ import {
   FlipPlugin,
   FlipEventListener,
   FlipStateEventListener,
-  FlipSelector
+  FlipSelector,
+  FlipData
 } from './types';
 import { NO_DELTA, KEY_ATTR } from './constants';
 import mirrorPlugin from './plugins/mirror';
 
 const active = () => true;
+const identity: <T>(a: T) => T = a => a;
+
+const flipDatasetMap: Record<
+  string,
+  [keyof FlipData, (value: string) => any]
+> = {
+  flipKey: ['key', identity],
+  flipNoScale: ['noScale', () => true]
+};
+
+const getFlipData = (element: Element): FlipData => {
+  if (!('dataset' in element)) {
+    // not supported
+
+    return {};
+  }
+
+  const dataset: Record<string, string> = (element as any).dataset;
+  const data: FlipData = {};
+
+  Object.keys(dataset).forEach(key => {
+    if (flipDatasetMap[key]) {
+      const [flipKey, project] = flipDatasetMap[key];
+      data[flipKey] = project(dataset[key]);
+    } else if (key.indexOf('flip') === 0) {
+      data[key[4].toLowerCase() + key.slice(5)] = dataset[key];
+    }
+  });
+
+  return data;
+};
 
 const createSelector = (
   selector: FlipSelector | string,
@@ -191,12 +223,6 @@ class Flipping<TAnimation = any> {
     const parentElement = options.parent || this.parentElement;
     const elements = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
-    // const config = {
-    //   onFlip: this.onFlip,
-    //   onEnter: this.onEnter,
-    //   onLeave: this.onLeave,
-    //   ...options
-    // };
 
     elements.forEach((element, index) => {
       const key = element.getAttribute(this.attribute);
@@ -205,6 +231,7 @@ class Flipping<TAnimation = any> {
         return;
       }
 
+      const data = getFlipData(element);
       const childParent = this.findParent(element, parentElement);
       const childParentKey = childParent.getAttribute(this.attribute);
       const childParentState = childParentKey
@@ -240,7 +267,8 @@ class Flipping<TAnimation = any> {
               element: previous.element
             }
           : undefined,
-        parent: childParentState
+        parent: childParentState,
+        data
       };
 
       this.states[key] = fullState[key] = newState;

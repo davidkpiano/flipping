@@ -7,6 +7,7 @@
   "scripts": {
     "start": "npm run build:watch",
     "test": "mocha -r ts-node/register test/**.test.ts",
+    "build": "npm run build:prod",
     "build:prod": "tsc && webpack --config webpack.config.prod.js",
     "build:watch": "webpack --config webpack.config.js -w",
     "examples": "npm start & node-sass -w examples/scss -o examples/css",

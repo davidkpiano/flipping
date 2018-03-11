@@ -63,7 +63,6 @@ export interface IFlipElementsStrategy {
 }
 
 export type IFlipStateType = 'PENDING' | 'ENTER' | 'MOVE' | 'LEAVE';
-
 export interface IFlipState<TAnimation = any> {
   type: IFlipStateType;
   key: string;
@@ -77,7 +76,16 @@ export interface IFlipState<TAnimation = any> {
     | undefined;
   start: number;
   parent: IFlipState<TAnimation> | undefined;
+  data: FlipData;
 }
+
+export interface IFlipData {
+  key?: string;
+  noScale?: boolean;
+  state?: string;
+}
+
+export type FlipData = { [key: string]: string } & IFlipData;
 
 export interface ICustomEffectTiming {
   stagger?: number | ((index: number) => number);

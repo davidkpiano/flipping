@@ -1,4 +1,4 @@
-import { IFlipStateMap } from '../types';
+import { IFlipStateMap, IBounds } from '../types';
 
 export default function mirrorPlugin(
   states: IFlipStateMap,
@@ -17,12 +17,22 @@ export default function mirrorPlugin(
     if (element) {
       // const mirrorKey = element.getAttribute('data-flip-mirror');
 
-      if (state.type === 'ENTER' || state.type === 'LEAVE') {
+      if (element.hasAttribute('data-flip-follow')) {
+        nextStates[key] = {
+          ...state,
+          delta: {
+            ...states[element.getAttribute('data-flip-follow')!].delta,
+            width: 1,
+            height: 1
+          } as IBounds
+        };
+      } else if (state.type === 'ENTER' || state.type === 'LEAVE') {
         let candidateElement = element.nextElementSibling;
         while (
           candidateElement &&
           (!candidateElement.hasAttribute('data-flip-key') ||
-            states[candidateElement.getAttribute('data-flip-key') as string].type !== 'MOVE')
+            states[candidateElement.getAttribute('data-flip-key') as string]
+              .type !== 'MOVE')
         ) {
           candidateElement = candidateElement.nextElementSibling;
         }
@@ -30,7 +40,9 @@ export default function mirrorPlugin(
         if (candidateElement) {
           nextStates[key] = {
             ...state,
-            delta: states[candidateElement.getAttribute('data-flip-key') as string].delta
+            delta:
+              states[candidateElement.getAttribute('data-flip-key') as string]
+                .delta
           };
         } else {
           nextStates[key] = state;

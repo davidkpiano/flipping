@@ -96,14 +96,6 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
     return;
   }
 
-  if (
-    element &&
-    element.parentElement &&
-    element.parentElement.hasAttribute('data-flip-wrap')
-  ) {
-    return slidingLayersAnimation(state, timingOptions);
-  }
-
   return scaleAnimation(state, timingOptions);
 };
 

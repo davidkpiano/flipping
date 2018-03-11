@@ -7,30 +7,14 @@ import { matrixTranslate, matrixMultiply } from './utils';
 import * as Rematrix from 'rematrix';
 
 export const scale = (state: IFlipState): IFlipElementsStrategy | undefined => {
-  const { bounds, delta, type, element } = state;
+  const { bounds, delta, element } = state;
 
-  if (!element || !delta || !bounds) { return undefined; }
-
-  if (type === 'ENTER') {
-    return {
-      element: {
-        from: {
-          transform: `translate(
-            ${delta ? delta.left : 0}px,
-            ${delta ? delta.top : 0}px)
-            scale(.01)`
-        },
-        to: {
-          transform: 'scale(1)'
-        }
-      }
-    };
+  if (!element || !delta || !bounds) {
+    return undefined;
   }
 
-  const preventScale = element.hasAttribute('data-flip-no-scale');
-
   const scaleChanged =
-    !preventScale && (delta.width !== 1 || delta.height !== 1);
+    !state.data.noScale && (delta.width !== 1 || delta.height !== 1);
   const translate = Rematrix.translate(delta.left, delta.top);
   const scale = scaleChanged
     ? Rematrix.scale(delta.width, delta.height)
@@ -46,13 +30,13 @@ export const scale = (state: IFlipState): IFlipElementsStrategy | undefined => {
     from: {
       x: delta.left,
       y: delta.top,
-      ...transformOrigin ? { transformOrigin } : undefined,
+      ...(transformOrigin ? { transformOrigin } : undefined),
       transform: `matrix3d(${invertedMatrix})`
     },
     to: {
       x: bounds.left,
       y: bounds.top,
-      ...transformOrigin ? { transformOrigin } : undefined,
+      ...(transformOrigin ? { transformOrigin } : undefined),
       transform: bounds.transform || 'none'
     }
   };
@@ -100,7 +84,9 @@ export const slide = (state: IFlipState): IFlipElementsStrategy | undefined => {
   const deltaWidth = bounds.width - previous.bounds.width;
   const deltaHeight = bounds.height - previous.bounds.height;
 
-  if (!delta) { return; }
+  if (!delta) {
+    return;
+  }
 
   if (deltaWidth > 0) {
     containerPosition.from.x = -deltaWidth + delta.left;
