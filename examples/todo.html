@@ -269,6 +269,17 @@
       transition: transform .3s;
       --bg: white;
     }
+
+    [data-flip-key] {
+      transition-property: transform;
+      transition-duration: calc(var(--flip-active, 1) * 0.6s);
+      transform-origin: top left;
+      transform:
+        translateX(calc(var(--flip-dx, 0) * 1px))
+        translateY(calc(var(--flip-dy, 0) * 1px))
+        scale(var(--flip-dw, 1), var(--flip-dh, 1))
+        ;
+    }
   </style>
 </head>
 
@@ -395,7 +406,7 @@
     </div>
     </div>
   </div>
-  <script src="../dist/flipping.web.js"></script>
+  <script src="../dist/flipping.css.js"></script>
   <script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
   <script>
     const h = new Hammer(document.querySelector('.ui-cards'));
@@ -419,7 +430,9 @@
 
     let state = machine.initial;
 
-    const flipping = new Flipping();
+    const flipping = new Flipping({
+      duration: 600
+    });
 
     const transition = flipping.wrap(event => {
       state = machine.states[state].on[event] || state;
