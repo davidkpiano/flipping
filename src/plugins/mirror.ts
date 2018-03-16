@@ -18,40 +18,49 @@ export default function mirrorPlugin(
       // const mirrorKey = element.getAttribute('data-flip-mirror');
 
       if (element.hasAttribute('data-flip-follow')) {
-        nextStates[key] = {
-          ...state,
-          delta: {
-            ...states[element.getAttribute('data-flip-follow')!].delta,
-            width: 1,
-            height: 1
-          } as IBounds
-        };
-      } else if (state.type === 'ENTER' || state.type === 'LEAVE') {
-        let candidateElement = element.nextElementSibling;
-        while (
-          candidateElement &&
-          (!candidateElement.hasAttribute('data-flip-key') ||
-            states[candidateElement.getAttribute('data-flip-key') as string]
-              .type !== 'MOVE')
-        ) {
-          candidateElement = candidateElement.nextElementSibling;
-        }
+        const followKey = element.getAttribute('data-flip-follow')!;
 
-        if (candidateElement) {
+        if (followKey && states[followKey]) {
           nextStates[key] = {
             ...state,
-            delta:
-              states[candidateElement.getAttribute('data-flip-key') as string]
-                .delta
+            delta: {
+              left: 0,
+              top: 0,
+              ...states[followKey].delta,
+              width: 1,
+              height: 1
+            } as IBounds
           };
-        } else {
-          nextStates[key] = state;
+        } else if (state.type === 'ENTER' || state.type === 'LEAVE') {
+          let candidateElement = element.nextElementSibling;
+          while (
+            candidateElement &&
+            (!candidateElement.hasAttribute('data-flip-key') ||
+              states[candidateElement.getAttribute('data-flip-key')!].type !==
+                'MOVE')
+          ) {
+            candidateElement = candidateElement.nextElementSibling;
+          }
+
+          if (candidateElement) {
+            const candidateDelta = states[
+              candidateElement.getAttribute('data-flip-key')!
+            ].delta!;
+
+            nextStates[key] = {
+              ...state,
+              delta: {
+                left: candidateDelta.left,
+                top: candidateDelta.top,
+                width: 1,
+                height: 1
+              }
+            };
+          }
         }
-      } else {
-        nextStates[key] = state;
       }
     }
   });
 
-  return nextStates as IFlipStateMap;
+  return Object.assign(states, nextStates) as IFlipStateMap;
 }

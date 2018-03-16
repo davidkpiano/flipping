@@ -44,7 +44,10 @@ export function styleValue(
   prop: string,
   value: string | number
 ): string | number {
-  if (['height', 'width', 'top', 'left'].indexOf(prop) !== -1 && typeof value === 'number') {
+  if (
+    ['height', 'width', 'top', 'left'].indexOf(prop) !== -1 &&
+    typeof value === 'number'
+  ) {
     return `${value}px`;
   }
 
