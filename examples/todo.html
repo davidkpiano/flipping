@@ -14,7 +14,8 @@
     }
 
     :root {
-      --header-height: 6rem;
+      --header-space: 6rem;
+      --header-height: 4rem;
     }
 
     html,
@@ -44,15 +45,54 @@
       background-image: linear-gradient(to bottom, #FAB159, #F76082);
     }
 
+    .ui-header {
+      height: var(--header-height);
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .ui-scene-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: opacity .6s;
+      display: grid;
+      grid-template-columns: 2rem 1fr 2rem;
+      padding: 0 1rem;
+    }
+
+    [data-state]:not([data-state="home"]) .ui-scene-header[data-show="home"] {
+      display: grid;
+      opacity: 0;
+    }
+    [data-state]:not([data-state="group"]) .ui-scene-header[data-show="group"] {
+      display: grid;
+      opacity: 0;
+    }
+    [data-state]:not([data-state="new"]) .ui-scene-header[data-show="new"] {
+      display: grid;
+      opacity: 0;
+    }
+
     .ui-heading {
       font-size: 2rem;
+    }
+
+    .ui-title {
+      font-weight: bold;
+      justify-self: center;
+      align-self: center;
     }
 
     .ui-scene.-group {
       width: 100%;
       height: 100%;
       padding: 2rem;
-      padding-top: var(--header-height);
+      padding-top: var(--header-space);
       display: grid;
       grid-template-rows: 1fr 1fr 1fr 1fr 6fr;
       --bg: white;
@@ -84,7 +124,7 @@
 
     .ui-scene.-home>.ui-layer {
       display: grid;
-      padding-top: var(--header-height);
+      padding-top: var(--header-space);
       grid-template-rows: 1fr 1fr 1fr 1fr 6fr;
       grid-template-columns: 2rem 1fr;
       grid-template-areas: "_ avatar" "_ heading" "_ paragraph" "_ date" "_ cards";
@@ -139,7 +179,7 @@
     }
 
     .ui-progress-line {
-      height: 100%;
+      height: .25rem;
       width: calc(100% - 2rem);
     }
 
@@ -148,7 +188,7 @@
       display: block;
       position: absolute;
       content: '';
-      height: .25rem;
+      height: 100%;
       top: calc(50% - .125rem);
       left: 0;
     }
@@ -165,7 +205,7 @@
 
     .ui-scene.-new {
       display: grid;
-      padding-top: var(--header-height);
+      padding-top: var(--header-space);
       grid-template-rows: 1fr 1fr 8fr;
       grid-template-columns: 2rem 1fr 2rem;
     }
@@ -240,27 +280,29 @@
       right: 2rem;
       bottom: 4rem;
       color: white;
-    }
-
-    .ui-fab-icon {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      transition: transform .6s;
+      transform: scale(1);
       display: flex;
       justify-content: center;
       align-items: center;
+      border: none;
     }
 
-    .ui-button {
-      --bg: blue;
-      color: white;
-      padding: 1rem;
-      width: 100%;
-      overflow: hidden;
-      grid-row: -1 / span 1;
-      grid-column: 1 / -1 !important;
+    .ui-fab > .ui-bg {
+      transition: border-radius .6s ease-in-out;
+    }
+
+    .ui-fab:focus {
+      outline: none;
+    }
+
+    [data-state="home"] .ui-fab {
+      transform: scale(0);
+      pointer-events: none;
+    }
+
+    [data-state="new"] .ui-fab {
+      border-radius: 0;
     }
 
     @keyframes fade-in {
@@ -317,19 +359,27 @@
       display: grid;
       grid-template-rows:
     }
-
-    [data-flip-key] {
-      transition-property: transform;
-      transition-duration: calc(var(--flip-active, 1) * 0.6s);
-      transform-origin: top left;
-      transform: translateX(calc(var(--flip-dx, 0) * 1px)) translateY(calc(var(--flip-dy, 0) * 1px)) scale(var(--flip-dw, 1), var(--flip-dh, 1));
-    }
   </style>
 </head>
 
 <body>
   <div id="app" class="ui-phone" data-state="home">
-    <header class="ui-header"></header>
+    <header class="ui-header">
+      <div class="ui-notch"></div>
+      <div class="ui-scene-headers">
+        <div class="ui-scene-header" data-show="home">
+          <div class="ui-small-icon"></div>
+          <div class="ui-title">TODO</div>
+          <div class="ui-small-icon"></div>
+        </div>
+        <div class="ui-scene-header" data-show="group">second</div>
+        <div class="ui-scene-header" data-show="new">
+          <div class="ui-small-icon"></div>
+          <div class="ui-title">New Task</div>
+          <div class="ui-small-icon"></div>
+        </div>
+      </div>
+    </header>
     <div class="ui-scene -home" data-scene="home">
       <div class="ui-layer">
         <div class="ui-icon -avatar"></div>
@@ -347,7 +397,7 @@
             <div class="ui-tasks" data-flip-no-scale data-flip-key="tasks-1">9 Tasks</div>
             <div class="ui-heading" data-flip-no-scale data-flip-key="heading-1">Personal</div>
             <div class="ui-progress" style="--progress: 83" data-flip-key="progress-1" data-flip-no-scale>
-              <div class="ui-progress-line" data-flip-key="progress-line-1" data-flip-no-scale></div>
+              <div class="ui-progress-line" data-flip-key="progress-line-1"></div>
               <div class="ui-progress-value" data-flip-key="progress-value-1">83%</div>
             </div>
           </div>
@@ -387,7 +437,7 @@
       <div class="ui-tasks" data-flip-no-scale data-flip-key="tasks-1">9 Tasks</div>
       <div class="ui-heading" data-flip-no-scale data-flip-key="heading-1">Personal</div>
       <div class="ui-progress" style="--progress: 83" data-flip-key="progress-1" data-flip-no-scale>
-        <div class="ui-progress-line" data-flip-key="progress-line-1" data-flip-no-scale></div>
+        <div class="ui-progress-line" data-flip-key="progress-line-1"></div>
         <div class="ui-progress-value" data-flip-key="progress-value-1">83%</div>
       </div>
       <div class="ui-all-todos" data-flip-key="todos-1" data-flip-follow="tasks-1">
@@ -453,7 +503,7 @@
 
     <button class="ui-fab" data-flip-key="add" data-flip-no-scale>
       <div class="ui-bg" data-flip-key="add-bg"></div>
-      <div class="ui-fab-icon">+</div>
+      <div class="ui-fab-icon" data-flip-key="add-icon" data-flip-no-scale>+</div>
     </button>
   </div>
   </div>

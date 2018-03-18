@@ -18,6 +18,18 @@ function styleVars(
   });
 }
 
+const flipStyle = (attr: string) => `
+[${attr}] {
+  transition-property: transform;
+  transition-duration: calc(var(--flip-active, 1) * 0.6s);
+  transform-origin: top left;
+  transform:
+    translateX(calc(var(--flip-dx, 0) * 1px))
+    translateY(calc(var(--flip-dy, 0) * 1px))
+    scale(var(--flip-dw, 1), var(--flip-dh, 1));
+}
+`;
+
 class FlippingCSS extends Flipping {
   constructor() {
     super({
@@ -61,6 +73,14 @@ class FlippingCSS extends Flipping {
         }, 0);
       }
     });
+
+    this.injectStyle();
+  }
+  injectStyle() {
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = flipStyle(this.attribute);
+
+    document.querySelector('head')!.appendChild(styleEl);
   }
 }
 

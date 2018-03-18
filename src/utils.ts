@@ -109,22 +109,3 @@ export const boundsChanged = (a: IBounds, b: IBounds): boolean => {
     a.height - b.height
   );
 };
-// (window as any).persistLayout = (node: Element): any[] => {
-//   const result = [];
-//   const { children } = node;
-//   const parentRect = node.getBoundingClientRect();
-
-//   for (let i = 0; i < children.length; i++) {
-//     const child = children[i];
-//     const rect = (child as Element).getBoundingClientRect();
-
-//     result.push({
-//       top: rect.top - parentRect.top,
-//       left: rect.left - parentRect.left,
-//       width: rect.width,
-//       height: rect.height,
-//     });
-//   }
-
-//   return result;
-// }

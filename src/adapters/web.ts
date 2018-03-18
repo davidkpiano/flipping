@@ -6,7 +6,7 @@ import {
 } from '../types';
 import Flipping from '../Flipping';
 import * as animations from '../animations';
-import { mapValues, styleValue, getStaggerDelay } from '../utils';
+import { mapValues, styleValue, getStaggerDelay, deltaChanged } from '../utils';
 
 const STATE_ATTR = 'data-flip-state';
 
@@ -82,7 +82,7 @@ const scaleAnimation = (
 };
 
 const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
-  const { element } = state;
+  const { element, delta } = state;
 
   const timingOptions: FlippingWebOptions = {
     ...options,
@@ -93,6 +93,10 @@ const autoAnimation = (state: IFlipState, options: FlippingWebOptions): any => {
   };
 
   if (!element) {
+    return;
+  }
+
+  if (!delta || !deltaChanged(delta)) {
     return;
   }
 
