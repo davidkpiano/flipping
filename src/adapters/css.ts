@@ -69,7 +69,8 @@ class FlippingCSS extends Flipping {
             );
           }
         });
-        setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
             Object.keys(stateMap).forEach(key => {
               const state = stateMap[key];
 
@@ -86,7 +87,8 @@ class FlippingCSS extends Flipping {
                 );
               }
             });
-        }, 0);
+          });
+        });
       }
     });
 
