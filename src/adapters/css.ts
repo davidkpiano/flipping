@@ -30,6 +30,8 @@ const flipStyle = (attr: string) => `
 }
 `;
 
+const matrixRegex = /matrix\(.*, .*, .*, .*, (.*), (.*)\)/;
+
 class FlippingCSS extends Flipping {
   constructor() {
     super({
@@ -38,11 +40,25 @@ class FlippingCSS extends Flipping {
           const state = stateMap[key];
 
           if (state.delta) {
+            
+            let tx = 0;
+            let ty = 0;
+
+            if ( state.bounds && state.bounds.transform )
+            {
+              const match = state.bounds.transform.match(matrixRegex);
+              if ( match && match.length === 3 )
+              {
+                tx = parseFloat( match[1] );
+                ty = parseFloat( match[2] );
+              }
+            }
+
             styleVars(
               state.element as HTMLElement,
               {
-                dx: state.delta.left,
-                dy: state.delta.top,
+                dx: state.delta.left + tx,
+                dy: state.delta.top + ty,
                 dw: state.delta.width,
                 dh: state.delta.height,
                 ...(state.data && state.data.noScale
@@ -53,24 +69,26 @@ class FlippingCSS extends Flipping {
             );
           }
         });
-        setTimeout(() => {
-          Object.keys(stateMap).forEach(key => {
-            const state = stateMap[key];
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            Object.keys(stateMap).forEach(key => {
+              const state = stateMap[key];
 
-            if (state.bounds) {
-              styleVars(
-                state.element as HTMLElement,
-                {
-                  dx: 0,
-                  dy: 0,
-                  dw: 1,
-                  dh: 1,
-                  active: 1
-                } as Record<string, any>
-              );
-            }
+              if (state.bounds) {
+                styleVars(
+                  state.element as HTMLElement,
+                  {
+                    dx: 0,
+                    dy: 0,
+                    dw: 1,
+                    dh: 1,
+                    active: 1
+                  } as Record<string, any>
+                );
+              }
+            });
           });
-        }, 0);
+        });
       }
     });
 

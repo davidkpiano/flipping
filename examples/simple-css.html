@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="../dist/flipping.css.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 600px;
+      height: 300px;
+      margin: auto;
+      margin-top: 3em;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+    }
+
+    .container--flip {
+      justify-content: flex-start;
+      flex-direction: column;
+    }
+
+    .item {
+      width: 50px;
+      height: 50px;
+      background: red;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Click this page as fast as you can!</h1>
+  <div class="container">
+    <span class='item' data-flip-key="C">C</span>
+    <span class='item' data-flip-key="S1">S</span>
+    <span class='item' data-flip-key="S2">S</span>
+  </div>
+  <script>
+    const container = document.querySelector( '.container' );
+    const flipping = new Flipping();
+
+    let state = true;
+
+    document.body.addEventListener('click', () => {
+      flipping.read();
+      container.classList.toggle( 'container--flip', state );
+      state = !state
+      flipping.flip();
+    });
+  </script>
+</body>
+</html>
