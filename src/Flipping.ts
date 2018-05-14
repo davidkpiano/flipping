@@ -1,4 +1,4 @@
-import * as mitt from 'mitt';
+import {default as mitt} from 'mitt';
 import { rect, isVisible, getDelta } from './utils';
 import {
   IBounds,
