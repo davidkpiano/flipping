@@ -5,7 +5,8 @@ import {
   IFlipElementsStrategy,
   IFlipStateMap,
   GSAPAnimation,
-  IGSAPOptions
+  IGSAPOptions,
+  AnimationEffectTiming
 } from '../types';
 import * as animations from '../animations';
 import { mapValues, styleValue, getStaggerDelay } from '../utils';
