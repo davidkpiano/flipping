@@ -1,5 +1,4 @@
-import {default as mitt} from 'mitt';
-import { rect, isVisible, getDelta } from './utils';
+import { rect, isVisible, getDelta, mitt } from './utils';
 import {
   IBounds,
   IFlippingConfig,
@@ -11,7 +10,8 @@ import {
   FlipEventListener,
   FlipStateEventListener,
   FlipSelector,
-  FlipData
+  FlipData,
+  mitt as Mitt
 } from './types';
 import { NO_DELTA, KEY_ATTR } from './constants';
 import mirrorPlugin from './plugins/mirror';
@@ -95,7 +95,7 @@ class Flipping<TAnimation = any> {
   public states: { [key: string]: IFlipState<TAnimation> };
   public parentElement: Element;
 
-  private emitter: mitt.Emitter;
+  private emitter: Mitt.Emitter;
 
   constructor(options: IFlippingConfig & Record<string, any> = {}) {
     this.attribute = options.attribute || KEY_ATTR;
@@ -110,7 +110,7 @@ class Flipping<TAnimation = any> {
     this.parentElement = options.parent || document.documentElement;
     this.plugins = options.plugins || [mirrorPlugin, radiusPlugin];
 
-    this.emitter = new mitt();
+    this.emitter = mitt();
     if (options.onRead) {
       this.on('read', options.onRead);
     }

@@ -45,11 +45,10 @@
     "ts-loader": "^2.3.7",
     "ts-node": "^3.3.0",
     "tslint": "^5.10.0",
-    "typescript": "^2.8.3",
+    "typescript": "^2.9.2",
     "webpack": "^2.7.0"
   },
   "dependencies": {
-    "mitt": "^1.1.3",
     "rematrix": "^0.1.3"
   }
 }
