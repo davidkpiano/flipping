@@ -6,7 +6,8 @@
     "lib": ["es2015", "dom", "dom.iterable"],
     "types": [
       "mocha",
-      "node"
+      "node",
+      "web-animations-js"
     ],
     "target": "es6",
     "noUnusedLocals": true,

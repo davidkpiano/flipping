@@ -40,8 +40,10 @@ export interface IFlippingConfig {
   plugins?: FlipPlugin[];
 }
 
-export interface IFlippingOptions extends IFlippingConfig {
+export interface IFlippingOptions<TAnimationConfig = {}>
+  extends IFlippingConfig {
   readOnly?: boolean;
+  timing?: TAnimationConfig | Record<string, TAnimationConfig>;
 }
 
 export interface IFlipElementStrategy {
@@ -58,8 +60,7 @@ export interface IFlipElementStrategy {
 }
 
 export interface IFlipElementsStrategy {
-  element: IFlipElementStrategy;
-  container?: IFlipElementStrategy;
+  [key: string]: IFlipElementStrategy;
 }
 
 export type IFlipStateType = 'PENDING' | 'ENTER' | 'MOVE' | 'LEAVE';
@@ -95,7 +96,7 @@ export interface AnimationEffectTiming {
   duration?: number;
   delay?: number;
   easing?: string;
-  fill?: string;
+  fill?: 'none' | 'forwards' | 'backwards' | 'both' | 'auto' | undefined;
   stagger?: number;
 }
 

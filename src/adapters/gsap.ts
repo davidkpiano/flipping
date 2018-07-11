@@ -29,6 +29,8 @@ function animate(
         GSAP.TweenLite.set(element, { clearProps: 'all' });
         animation.kill();
       });
+
+    return animation;
   });
 
   return {

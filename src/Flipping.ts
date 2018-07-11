@@ -81,7 +81,7 @@ const createSelector = (
   return selector;
 };
 
-class Flipping<TAnimation = any> {
+class Flipping<TAnimation = any, TAnimationConfig extends {} = {}> {
   public plugins: FlipPlugin[];
   public selector: FlipSelector;
   public attribute: string;
@@ -217,10 +217,10 @@ class Flipping<TAnimation = any> {
         : listener
     );
   }
-  public read(options: IFlippingOptions = {}) {
+  public read(options: IFlippingOptions<TAnimationConfig> = {}) {
     this.flip({ ...options, readOnly: true });
   }
-  public flip(options: IFlippingOptions = {}) {
+  public flip(options: IFlippingOptions<TAnimationConfig> = {}) {
     const parentElement = options.parent || this.parentElement;
     const elements = this.selectActive(parentElement);
     const fullState: IFlipStateMap = {};
@@ -313,7 +313,7 @@ class Flipping<TAnimation = any> {
   }
   public wrap<T>(
     fn: (...args: any[]) => T,
-    options: IFlippingOptions = {}
+    options: IFlippingOptions<TAnimationConfig> = {}
   ): Function {
     return (...args) => {
       this.read(options);

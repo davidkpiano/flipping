@@ -2,14 +2,14 @@ import * as Rematrix from 'rematrix';
 import { IBounds } from './types';
 import { NO_DELTA } from './constants';
 
-export function mapValues(
-  object: object,
-  iteratee: (value: any, key: string, object: object) => any
-): object {
+export function mapValues<T, P>(
+  collection: { [key: string]: T },
+  iteratee: (item: T, key: string, collection: { [key: string]: T }) => P
+): { [key: string]: P } {
   const result = {};
 
-  Object.keys(object || {}).forEach(key => {
-    result[key] = iteratee(object[key], key, object);
+  Object.keys(collection).forEach(key => {
+    result[key] = iteratee(collection[key], key, collection);
   });
 
   return result;
@@ -42,8 +42,8 @@ export function matrixMultiply(...matrices) {
 
 export function styleValue(
   prop: string,
-  value: string | number
-): string | number {
+  value: string | number | undefined
+): string | number | undefined {
   if (
     ['height', 'width', 'top', 'left'].indexOf(prop) !== -1 &&
     typeof value === 'number'
