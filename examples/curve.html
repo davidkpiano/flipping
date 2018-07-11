@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      background-color: #000;
+    }
+
+    body.on {
+      flex-direction: column;
+    }
+
+    .ball-container {
+      height: 10vmin;
+      width: 10vmin;
+      outline: 1px solid white;
+    }
+
+    .ball {
+      /* border-radius: 50%; */
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    
+    }
+    .ball:before {
+      content: 'i am white'
+    }
+
+    [data-flip-layer] {
+      height: 100%;
+      width: 100%;
+      top: 0;
+      left: 0;
+      position: absolute;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ball-container">
+    <div class="ball" data-flip-key="ball-1" data-flip-layer></div>
+  </div>
+  <div class="ball-container">
+    <div class="ball" data-flip-key="ball-2" data-flip-layer></div>
+  </div>
+  <script src="../dist/flipping.web.js"></script>
+  <script>
+    const flipping = new Flipping({
+      duration: 600
+    });
+
+    document.body.addEventListener('click', flipping.wrap(e => {
+      document.body.classList.toggle('on')
+    }));
+  </script>
+</body>
+
+</html>

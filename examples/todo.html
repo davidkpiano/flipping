@@ -5,6 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.0.13/css/regular.css" integrity="sha384-HLkkol/uuRVQDnHaAwidOxb1uCbd78FoGV/teF8vONYKRP9oPQcBZKFdi3LYDy/C"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.0.13/css/fontawesome.css" integrity="sha384-LDuQaX4rOgqi4rbWCyWj3XVBlgDzuxGy/E6vWN6U7c25/eSJIwyKhy9WgZCHQWXz"
+    crossorigin="anonymous">
   <title>Document</title>
   <!-- <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet"> -->
   <style>
@@ -39,7 +43,7 @@
     }
 
     .ui-phone {
-      height: 600px;
+      height: 660px;
       width: 300px;
       outline: 1px solid;
       background-image: linear-gradient(to bottom, #FAB159, #F76082);
@@ -65,17 +69,12 @@
       padding: 0 1rem;
     }
 
-    [data-state]:not([data-state="home"]) .ui-scene-header[data-show="home"] {
-      display: grid;
-      opacity: 0;
-    }
-    [data-state]:not([data-state="group"]) .ui-scene-header[data-show="group"] {
-      display: grid;
-      opacity: 0;
-    }
+    [data-state]:not([data-state="home"]) .ui-scene-header[data-show="home"],
+    [data-state]:not([data-state="group"]) .ui-scene-header[data-show="group"],
     [data-state]:not([data-state="new"]) .ui-scene-header[data-show="new"] {
       display: grid;
       opacity: 0;
+      pointer-events: none;
     }
 
     .ui-heading {
@@ -158,8 +157,8 @@
     }
 
     .ui-card {
-      width: 200px;
-      height: 250px;
+      width: 230px;
+      height: 300px;
       margin-right: 1rem;
       max-width: 100%;
       flex-shrink: 0;
@@ -262,8 +261,23 @@
       margin-bottom: .5rem;
     }
 
-    .ui-todo {
+    .ui-label {
+      display: grid;
+      grid-template-columns: 2rem 1fr 2rem;
       padding: 1rem 0;
+    }
+
+    .ui-label>input[type="checkbox"] {
+      opacity: 0;
+      grid-column: 1 / 2;
+    }
+
+    .ui-todo-title {
+      grid-column: 2 / 3;
+    }
+
+    :checked+.ui-todo-title {
+      opacity: 0.5;
     }
 
     .ui-subheading {
@@ -288,8 +302,13 @@
       border: none;
     }
 
-    .ui-fab > .ui-bg {
-      transition: border-radius .6s ease-in-out;
+    @keyframes flatten-radius {
+      from {
+        border-radius: 50%;
+      }
+      to {
+        border-radius: 0;
+      }
     }
 
     .ui-fab:focus {
@@ -303,6 +322,14 @@
 
     [data-state="new"] .ui-fab {
       border-radius: 0;
+    }
+
+    [data-state="new"] .ui-fab>.ui-bg[data-flip-state="active"] {
+      animation: flatten-radius .6s ease-in-out;
+    }
+
+    [data-state="group"] .ui-fab>.ui-bg[data-flip-state="active"] {
+      animation: flatten-radius .6s ease-in-out reverse;
     }
 
     @keyframes fade-in {
@@ -372,9 +399,11 @@
           <div class="ui-title">TODO</div>
           <div class="ui-small-icon"></div>
         </div>
-        <div class="ui-scene-header" data-show="group">second</div>
+        <div class="ui-scene-header" data-show="group">
+          <div class="ui-small-icon" data-event="BACK"><i class="fas fa-camera-retro"></i></div>
+        </div>
         <div class="ui-scene-header" data-show="new">
-          <div class="ui-small-icon"></div>
+          <div class="ui-small-icon" data-event="BACK">bk</div>
           <div class="ui-title">New Task</div>
           <div class="ui-small-icon"></div>
         </div>
@@ -444,43 +473,61 @@
         <div class="ui-subheading">Today</div>
         <ul class="ui-todos">
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
         </ul>
         <div class="ui-subheading">Tomorrow</div>
         <ul class="ui-todos">
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
           <li class="ui-todo">
-            <input type="checkbox" name="" id="">
-            <label for="" class="ui-label">Do this thing</label>
+            <label class="ui-label">
+              <input type="checkbox" name="" id="">
+              <span class="ui-todo-title">Do this thing</span>
+            </label>
           </li>
         </ul>
       </div>
@@ -518,7 +565,7 @@
           on: { CARD: 'group' }
         },
         group: {
-          on: { GROUP: 'home', NEW: 'new' }
+          on: { BACK: 'home', NEW: 'new' }
         },
         new: {
           on: {
@@ -536,6 +583,7 @@
     });
 
     const transition = flipping.wrap(event => {
+      console.log({ event });
       state = machine.states[state].on[event] || state;
       document.querySelector('[data-state]').setAttribute('data-state', state);
     });
@@ -552,9 +600,10 @@
       transition('NEW');
     });
 
-    document.querySelector('.ui-scene.-new').addEventListener('click', e => {
-      transition('BACK');
-    });
+    document.querySelectorAll('[data-event="BACK"]')
+      .forEach(el => el.addEventListener('click', e => {
+        transition('BACK');
+      }));
   </script>
 </body>
 

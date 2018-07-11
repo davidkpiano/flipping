@@ -72,7 +72,7 @@ export interface IFlipState<TAnimation = any> {
   animation: TAnimation;
   index: number;
   previous:
-    | Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'element'>
+    | Pick<IFlipState, 'type' | 'bounds' | 'animation' | 'element' | 'data'>
     | undefined;
   start: number;
   parent: IFlipState<TAnimation> | undefined;

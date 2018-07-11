@@ -15,6 +15,7 @@ import {
 } from './types';
 import { NO_DELTA, KEY_ATTR } from './constants';
 import mirrorPlugin from './plugins/mirror';
+import radiusPlugin from './plugins/radius';
 
 const active = () => true;
 const identity: <T>(a: T) => T = a => a;
@@ -107,7 +108,7 @@ class Flipping<TAnimation = any> {
     this.getBounds = options.getBounds || rect;
     this.getDelta = options.getDelta || getDelta;
     this.parentElement = options.parent || document.documentElement;
-    this.plugins = options.plugins || [mirrorPlugin];
+    this.plugins = options.plugins || [mirrorPlugin, radiusPlugin];
 
     this.emitter = new mitt();
     if (options.onRead) {
@@ -264,7 +265,8 @@ class Flipping<TAnimation = any> {
               type: previous.type,
               bounds: previous.bounds,
               animation: previous.animation,
-              element: previous.element
+              element: previous.element,
+              data: previous.data
             }
           : undefined,
         parent: childParentState,

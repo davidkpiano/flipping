@@ -73,7 +73,9 @@ export const rect = (element: Element): IBounds => {
     left,
     width,
     height,
-    transform: getComputedStyle(element).transform || undefined
+    get transform() {
+      return getComputedStyle(element).transform || undefined;
+    }
   };
 };
 export function isVisible(element: Element) {

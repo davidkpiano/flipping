@@ -1,8 +1,11 @@
 import Flipping from '../src/flipping';
 import { assert } from 'chai';
 
+(global as any).getComputedStyle = () => ({});
+
 declare type Element = {
   getAttribute: (attr: string) => string;
+  hasAttribute: (attr: string) => boolean;
   getBoundingClientRect: () => IRect;
   _setRect: (rect: IRect) => void;
 };
@@ -26,6 +29,9 @@ function createMockElement(key: string, rect: IRect): Element {
   return {
     getAttribute() {
       return key;
+    },
+    hasAttribute() {
+      return false;
     },
     getBoundingClientRect() {
       return currentRect;

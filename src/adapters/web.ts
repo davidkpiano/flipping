@@ -117,7 +117,7 @@ class FlippingWeb extends Flipping {
   static defaults: FlippingWebOptions = {
     duration: 300,
     delay: 0,
-    easing: 'ease',
+    easing: `cubic-bezier(.5, 0, .5, 1)`,
     fill: 'none',
     stagger: 0
   };
