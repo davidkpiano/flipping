@@ -9,7 +9,7 @@
       "node",
       "web-animations-js"
     ],
-    "target": "es6",
+    "target": "es5",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strictNullChecks": true,
