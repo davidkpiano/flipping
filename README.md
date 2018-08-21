@@ -86,6 +86,8 @@ For greater control and custom animations, you can pass in the following paramet
 -  `onLeave?: (state: IFlipStateMap) => void;` - Event listener. Called with the state map of elements that leave (that is, previously tracked but no longer active).
 -  `parent?: Element;` - The root element to query all flippable elements. Defaults to the `<body>`.
 -  `plugins?: FlipPlugin[];` - An array of plugins that transform the state map before being emitted.
+-  `duration?: number` - Animation duration in ms. Defaults to 300.
+-  `easing?: string` - Easing function name e.g. `ease-in-out`. Defaults to `cubic-bezier(.5, 0, .5, 1)`.
 
 ### `flipping.read(): void`
 
