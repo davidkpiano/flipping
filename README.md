@@ -91,7 +91,7 @@ For greater control and custom animations, you can pass in the following paramet
 
 ### `flipping.read(): void`
 
-Queries all the flippable selectors and reads their bounds (position and size). This must be called before layout cahnges are made.
+Queries all the flippable selectors and reads their bounds (position and size). This must be called before layout changes are made.
 
 Will call any `onRead()` event listeners with the entire state map.
 
