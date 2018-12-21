@@ -5,10 +5,7 @@ var path = require('path');
 
 module.exports = {
   entry: {
-    flipping: './src/index',
-    'flipping.web': './src/adapters/web',
-    // 'flipping.gsap': './src/adapters/gsap',
-    'flipping.css': './src/adapters/css'
+    flipping: './src/index'
   },
   output: {
     library: 'Flipping',

@@ -1,26 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "allowSyntheticDefaultImports": true,
+    "module": "ES2015",
     "declaration": true,
     "lib": ["es2015", "dom", "dom.iterable"],
-    "types": [
-      "mocha",
-      "node",
-      "web-animations-js"
-    ],
+    "types": ["mocha", "node"],
     "target": "es5",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strictNullChecks": true,
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "esModuleInterop": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "awesomeTypescriptLoaderOptions": {
-    "useBabel": true,
-    "useCache": true,
-    "useTranspileModule": true
-  }
+  "include": ["src/**/*"]
 }

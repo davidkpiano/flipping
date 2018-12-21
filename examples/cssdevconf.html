@@ -1,116 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-  <script src="../dist/flipping.web.js"></script>
-  <style>
-    * {
-      position: relative;
-      box-sizing: border-box;
-      user-select: none;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <script src="../dist/flipping.js"></script>
+    <style>
+      * {
+        position: relative;
+        box-sizing: border-box;
+        user-select: none;
+      }
 
-    html, body {
-      height: 100%;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-content: center;
-    }
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-content: center;
+      }
 
-    body [data-flip-key] {
-      display: none;
-      will-change: transform;
-    }
+      body [data-flip-key] {
+        display: none;
+        will-change: transform;
+      }
 
-    h1, h2, h3 {
-      text-align: center;
-      margin: 0;
-    }
+      h1,
+      h2,
+      h3 {
+        text-align: center;
+        margin: 0;
+      }
 
-    h1 {
-      font-family: Helvetica Neue, sans-serif;
-      color: #ff4444;
-      font-size: 10rem;
-      font-weight: normal;
-      letter-spacing: -.5rem;
-    }
-    
-    h2 {
-      font-style: italic;
-      font-size: 3rem;
-    }
+      h1 {
+        font-family: Helvetica Neue, sans-serif;
+        color: #ff4444;
+        font-size: 10rem;
+        font-weight: normal;
+        letter-spacing: -0.5rem;
+      }
 
-    h3 {
-      font-weight: 400;
-      font-family: Helvetica Neue, sans-serif;
-      font-size: 2rem;
-      color: rgb(75, 135, 239);
-      letter-spacing: .3rem;
-    }
+      h2 {
+        font-style: italic;
+        font-size: 3rem;
+      }
 
-    [data-state^="C"] [data-flip-key="C"] {
-      display: inline-block;
-    }
-    [data-state^="C"] marquee > [data-flip-key="hashtag"] {
-      display: inline-block;
-    }
-    [data-state^="CS"] [data-flip-key="S1"] {
-      display: inline-block;
-    }
-    [data-state^="CSS"] [data-flip-key="S2"] {
-      display: inline-block;
-    }
-    [data-state^="CSS Dev"] [data-flip-key="Dev"] {
-      display: inline-block;
-    }
-    [data-state^="CSS Dev Conference"] [data-flip-key="Conference"] {
-      display: inline-block;
-    }
-    [data-state^="CSS Dev Conference"] marquee {
-      display: none;
-    }
-    [data-state^="CSS Dev Conference"] [data-flip-key="hashtag"] {
-      display: inline-block;
-    }
+      h3 {
+        font-weight: 400;
+        font-family: Helvetica Neue, sans-serif;
+        font-size: 2rem;
+        color: rgb(75, 135, 239);
+        letter-spacing: 0.3rem;
+      }
 
-    [data-state^="CSS Dev"] {
-      justify-content: center;
-    }
-  </style>
-</head>
-<body data-state="C">
-  <h1>
-    <span data-flip-key="C">C</span>
-    <span data-flip-key="S1">S</span>
-    <span data-flip-key="S2">S</span>
-  </h1>
-  <h2><span data-flip-key="Dev">Dev</span> <span data-flip-key="Conference">Conference</span></h2>
-  <script>
-    const flipping = new Flipping();
-    const machine = {
-      C: 'CS',
-      CS: 'CSS',
-      CSS: 'CSS Dev',
-      'CSS Dev': 'CSS Dev Conference',
-      'CSS Dev Conference': 'C'
-    };
+      [data-flip-state] {
+        will-change: transform;
+        transition: all .6s ease;
+      }
+      [data-flip-state="read"] {
+        transition: none;
+      }
+      [data-flip-state="pre-move"] {
+        transition: none;
+        transform: translate(var(--flip-ix-px), var(--flip-iy-px)) rotate(-2turn);
+      }
+      [data-flip-state="move"] {
+        transform: none;
+      }
+      [data-flip-state="pre-enter"] {
+        transition: none;
+        transform: scale(0);
+      }
+      [data-flip-state="enter"] {
+        transform: scale(1);
+      }
 
-    let state = 'C';
+      [data-state^='C'] [data-flip-key='C'] {
+        display: inline-block;
+      }
+      [data-state^='C'] marquee > [data-flip-key='hashtag'] {
+        display: inline-block;
+      }
+      [data-state^='CS'] [data-flip-key='S1'] {
+        display: inline-block;
+      }
+      [data-state^='CSS'] [data-flip-key='S2'] {
+        display: inline-block;
+      }
+      [data-state^='CSS Dev'] [data-flip-key='Dev'] {
+        display: inline-block;
+      }
+      [data-state^='CSS Dev Conference'] [data-flip-key='Conference'] {
+        display: inline-block;
+      }
+      [data-state^='CSS Dev Conference Yeah'] [data-flip-key='Yeah'] {
+        display: inline-block;
+      }
+      [data-state^='CSS Dev Conference'] marquee {
+        display: none;
+      }
+      [data-state^='CSS Dev Conference'] [data-flip-key='hashtag'] {
+        display: inline-block;
+      }
 
-    document.body.addEventListener('click', flipping.wrap(() => {
-      state = machine[state];
-      document.body.setAttribute('data-state', state);
-    }));
-  </script>
-</body>
+      [data-state^='CSS Dev'] {
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body data-state="C">
+    <h1>
+      <span data-flip-key="C">C</span> <span data-flip-key="S1">S</span>
+      <span data-flip-key="S2">S</span>
+    </h1>
+    <h2>
+      <span data-flip-key="Dev">Dev</span>
+      <span data-flip-key="Conference">Conference</span>
+      <span></span>
+
+    </h2>
+    <script>
+      const flipping = new Flipping.Flipping();
+      const el = document.querySelector(`[data-flip-key="C"]`);
+      flipping.onFlip(data => {
+        // console.log(data.key, data.state);
+      });
+      const machine = {
+        C: 'CS',
+        CS: 'CSS',
+        CSS: 'CSS Dev',
+        'CSS Dev': 'CSS Dev Conference',
+        'CSS Dev Conference': 'C'
+      };
+
+
+      let state = 'C';
+
+      flipping.read();
+
+      document.body.addEventListener('click', () => {
+        flipping.read();
+        state = machine[state];
+        document.body.setAttribute('data-state', state);
+        flipping.flip();
+      });
+    </script>
+  </body>
 </html>

@@ -8,7 +8,7 @@
     "start": "npm run build:watch",
     "test": "NODE_ENV=test && mocha -r ts-node/register test/**.test.ts",
     "build": "npm run build:prod",
-    "build:prod": "tsc && webpack --config webpack.config.prod.js",
+    "build:prod": "rollup -c",
     "build:watch": "webpack --config webpack.config.js -w",
     "examples": "npm start & node-sass -w examples/scss -o examples/css",
     "prepublish": "npm run build:prod"
@@ -29,26 +29,24 @@
   },
   "homepage": "https://github.com/davidkpiano/flipping#readme",
   "devDependencies": {
-    "@types/gsap": "^1.19.2",
     "@types/jsdom": "^11.0.6",
     "@types/mocha": "^5.2.4",
     "@types/web-animations-js": "^2.2.6",
-    "awesome-typescript-loader": "^3.5.0",
-    "babel-core": "^6.26.3",
     "chai": "^3.5.0",
-    "gsap": "^1.20.6",
     "jsdom": "^11.11.0",
     "jsdom-global": "^3.0.2",
     "mocha": "^3.5.3",
     "node-sass": "^4.9.2",
     "prettier": "^1.13.7",
-    "ts-loader": "^2.3.7",
-    "ts-node": "^3.3.0",
+    "rollup": "^0.68.0",
+    "rollup-plugin-filesize": "^5.0.1",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-terser": "^3.0.0",
+    "rollup-plugin-typescript2": "^0.18.1",
     "tslint": "^5.10.0",
-    "typescript": "^2.9.2",
-    "webpack": "^2.7.0"
+    "typescript": "^3.2.1",
+    "webpack": "^4.28.0",
+    "webpack-cli": "^3.1.2"
   },
-  "dependencies": {
-    "rematrix": "^0.1.3"
-  }
+  "dependencies": {}
 }
