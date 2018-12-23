@@ -63,7 +63,6 @@
 
       [data-flip-state] {
         will-change: transform;
-        transition: all .6s ease;
       }
       [data-flip-state="read"] {
         transition: none;
@@ -73,6 +72,7 @@
         transform: translate(var(--flip-ix-px), var(--flip-iy-px)) rotate(-2turn);
       }
       [data-flip-state="move"] {
+        transition: all .6s ease;
         transform: none;
       }
       [data-flip-state="pre-enter"] {

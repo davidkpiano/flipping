@@ -9,7 +9,7 @@
     "test": "NODE_ENV=test && mocha -r ts-node/register test/**.test.ts",
     "build": "npm run build:prod",
     "build:prod": "rollup -c",
-    "build:watch": "webpack --config webpack.config.js -w",
+    "build:watch": "rollup -cw",
     "examples": "npm start & node-sass -w examples/scss -o examples/css",
     "prepublish": "npm run build:prod"
   },

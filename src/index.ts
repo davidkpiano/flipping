@@ -1,3 +1,6 @@
+interface StyleMap {
+  readonly [key: string]: string | number;
+}
 interface Rect extends ClientRect {
   readonly top: number;
   readonly bottom: number;
@@ -8,7 +11,7 @@ interface Rect extends ClientRect {
   readonly transform?: string;
 }
 
-export function rect(element: Element): Rect {
+export function getRect(element: Element, relative: boolean = true): Rect {
   const {
     top,
     bottom,
@@ -18,16 +21,28 @@ export function rect(element: Element): Rect {
     height
   } = element.getBoundingClientRect();
 
+  const parentRect = element.parentElement
+    ? element.parentElement.getBoundingClientRect()
+    : undefined;
+
   return {
-    top,
+    top: top - (parentRect ? parentRect.top : 0),
     bottom,
-    left,
+    left: left - (parentRect ? parentRect.left : 0),
     right,
     width,
     height,
     get transform() {
       return getComputedStyle(element).transform || undefined;
     }
+  };
+}
+
+export function getStyles(element: HTMLElement): StyleMap {
+  const computedStyle = getComputedStyle(element);
+
+  return {
+    radius: computedStyle.borderRadius || 0
   };
 }
 
@@ -90,6 +105,7 @@ interface FlipData {
   element: HTMLElement;
   state: string;
   rect: Rect;
+  styles: StyleMap;
   delta: Delta;
   inverse: Delta;
   previous: FlipData | undefined;
@@ -100,7 +116,7 @@ type FlipElementMap = Record<string, HTMLElement | undefined>;
 type FlipListener = (data: FlipData) => void;
 
 export function isVisible(element: HTMLElement) {
-  const { width, height } = rect(element);
+  const { width, height } = getRect(element);
 
   return !(width === 0 && height === 0);
 }
@@ -136,29 +152,48 @@ export class Flipping {
 
     this.globalListeners.forEach(listener => {
       listener(data);
-      const distX = Math.abs(data.delta.left);
-      const distY = Math.abs(data.delta.top);
-
-      Flipping.style(
-        data,
-        {
-          // position
-          x: data.rect.left,
-          y: data.rect.top,
-          // delta
-          dx: data.delta.left,
-          dy: data.delta.top,
-          // inverse delta
-          ix: data.inverse.left,
-          iy: data.inverse.top,
-          // distance
-          "distance-x": distX,
-          "distance-y": distY,
-          distance: Math.hypot(distX, distY)
-        },
-        { px: true }
-      );
     });
+
+    const distX = Math.abs(data.delta.left);
+    const distY = Math.abs(data.delta.top);
+    Flipping.style(
+      data,
+      {
+        // position
+        x: data.rect.left,
+        y: data.rect.top,
+        // delta
+        dx: data.delta.left,
+        dy: data.delta.top,
+        // inverse delta
+        ix: data.inverse.left,
+        iy: data.inverse.top,
+        "inverse-xy": `translate(${data.inverse.left}px, ${
+          data.inverse.top
+        }px)`,
+        // scale
+        iw: data.inverse.width,
+        ih: data.inverse.height,
+        "iw-ratio": data.inverse.widthRatio,
+        "ih-ratio": data.inverse.heightRatio,
+        "inverse-scale": `scale(${data.inverse.widthRatio}, ${
+          data.inverse.heightRatio
+        })`,
+        // distance
+        "distance-x": distX,
+        "distance-y": distY,
+        distance: Math.hypot(distX, distY),
+        // radius
+        "inverse-radius-x": `calc((${data.styles.radius} * ${
+          data.delta.widthRatio
+        }))`,
+        "inverse-radius-y": `calc((${data.styles.radius} * ${
+          data.delta.heightRatio
+        }))`,
+        "inverse-radius": `var(--flip-inverse-radius-x) / var(--flip-inverse-radius-y)`
+      },
+      { px: true }
+    );
   }
 
   public static style(
@@ -224,7 +259,8 @@ export class Flipping {
         key,
         element,
         state: visible ? "read" : "hidden",
-        rect: rect(element),
+        rect: getRect(element),
+        styles: getStyles(element),
         delta: NO_DELTA,
         inverse: NO_DELTA,
         previous
@@ -251,13 +287,14 @@ export class Flipping {
           key,
           element,
           state: "enter",
-          rect: rect(element),
+          rect: getRect(element),
+          styles: getStyles(element),
           delta: NO_DELTA,
           inverse: NO_DELTA,
           previous: undefined
         };
       } else {
-        const delta = getDelta(existingData.rect, rect(element));
+        const delta = getDelta(existingData.rect, getRect(element));
         data = {
           key,
           element,
@@ -269,7 +306,8 @@ export class Flipping {
               : visible
                 ? "move"
                 : "exit",
-          rect: rect(element),
+          rect: getRect(element),
+          styles: getStyles(element),
           delta,
           inverse: getInverse(delta),
           previous: existingData
@@ -283,6 +321,38 @@ export class Flipping {
         });
       });
     });
+  }
+  public wrap<T>(fn: (...args: any[]) => T): (...args: any[]) => T {
+    return (...args) => {
+      this.read();
+      const result = fn.apply(null, args) as T;
+      this.flip();
+      return result;
+    };
+  }
+  public applyDefaultStyles() {
+    const styles = `
+      [data-flip-state] {
+        will-change: transform;
+      }
+      [data-flip-state="read"] {
+        transition: none;
+      }
+      [data-flip-state="pre-move"] {
+        transition: none;
+        transform: var(--flip-inverse-xy);
+        xclip-path: polygon(0% 0%, calc(var(--flip-iw-ratio) * 100%) 0, calc(var(--flip-iw-ratio) * 100%) calc(var(--flip-ih-ratio) * 100%), 0 calc(var(--flip-ih-ratio) * 100%));
+      }
+      [data-flip-state="move"] {
+        transition: all .6s ease;
+        transform: none;
+        xclip-path: polygon(0% 0%, 100% 0, 100% 100%, 0 100%);
+      }
+    `;
+
+    const elStyle = document.createElement("style");
+    elStyle.innerHTML = styles;
+    document.head.appendChild(elStyle);
   }
 }
 
