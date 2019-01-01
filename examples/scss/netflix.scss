@@ -1,0 +1,72 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+  position: relative;
+}
+
+body,
+html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #f6f6f2;
+  color: #26241f;
+}
+
+.scene {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+
+  &:nth-child(2) {
+    h1 {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+
+      > div {
+        grid-area: 1 / 1;
+      }
+    }
+  }
+}
+
+[data-word] {
+  transition: all 0.3s ease;
+}
+
+[data-state='1'] .scene:nth-child(1) {
+  display: flex;
+}
+
+[data-state='2'] .scene:nth-child(2),
+[data-state='3'] .scene:nth-child(2),
+[data-state='4'] .scene:nth-child(2) {
+  display: flex;
+}
+
+[data-state='2'] .scene:nth-child(2) {
+  .first [data-word] {
+    opacity: 0;
+    transition-delay: calc(var(--word-index) * 200ms);
+  }
+}
+
+span {
+  display: inline-block;
+}
+
+// Splitting
+.whitespace {
+  width: 0.5ch;
+}

@@ -1,101 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link rel="stylesheet" href="css/invision.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-  <link rel="stylesheet" href="css/invision.css">
-</head>
-
-<body data-state="a">
-  <input type="checkbox" name="" id="check" checked>
-  <div id="app" data-key="app">
-    <header class="ui-header"></header>
-    <div class="ui-cards" data-flip-no-scale data-key="cards">
-      <div class="ui-card" data-flip-no-scale data-key="card">
-        <div class="ui-feature" data-flip-no-scale data-key="feature"></div>
-        <div class="ui-content" data-flip-no-scale data-key="content">
-          <div class="ui-title" data-flip-no-scale data-key="title">
-            InVision iOS
+  <body data-state="a">
+    <input type="checkbox" name="" id="check" checked />
+    <div id="app" data-key="app">
+      <header class="ui-header"></header>
+      <div class="ui-cards" data-flip-no-scale data-key="cards">
+        <div class="ui-card" data-flip-no-scale data-key="card">
+          <div class="ui-feature" data-flip-no-scale data-key="feature"></div>
+          <div class="ui-content" data-flip-no-scale data-key="content">
+            <div class="ui-title" data-flip-no-scale data-key="title">
+              InVision iOS
+            </div>
+            <div class="ui-subtitle" data-flip-no-scale data-key="subtitle">
+              24 Documents
+            </div>
+            <ul class="ui-items" data-flip-no-scale data-key="items">
+              <li class="ui-item">Something 1</li>
+              <li class="ui-item">Something 2</li>
+              <li class="ui-item">Something 3</li>
+              <li class="ui-item">Something 4</li>
+              <li class="ui-item">Something 5</li>
+            </ul>
           </div>
-          <div class="ui-subtitle" data-flip-no-scale data-key="subtitle">
-            24 Documents
+          <div class="ui-bg">
+            <div class="ui-bg-color" data-key="bg"></div>
+            <div class="ui-bg-img" data-key="bg-img"></div>
           </div>
-          <ul class="ui-items" data-flip-no-scale data-key="items">
-            <li class="ui-item">Something 1</li>
-            <li class="ui-item">Something 2</li>
-            <li class="ui-item">Something 3</li>
-            <li class="ui-item">Something 4</li>
-            <li class="ui-item">Something 5</li>
-          </ul>
         </div>
-        <div class="ui-bg">
-          <div class="ui-bg-color" data-key="bg"></div>
-          <div class="ui-bg-img" data-key="bg-img"></div>
+
+        <div class="ui-card" data-flip-no-scale data-key="2card">
+          <div class="ui-feature" data-flip-no-scale data-key="2feature"></div>
+          <div class="ui-content" data-flip-no-scale data-key="2content">
+            <div class="ui-title" data-flip-no-scale data-key="2title">
+              InVision iOS
+            </div>
+            <div class="ui-subtitle" data-flip-no-scale data-key="2subtitle">
+              24 Documents
+            </div>
+            <ul class="ui-items" data-flip-no-scale data-key="2items">
+              <li class="ui-item">Something 1</li>
+              <li class="ui-item">Something 2</li>
+              <li class="ui-item">Something 3</li>
+              <li class="ui-item">Something 4</li>
+              <li class="ui-item">Something 5</li>
+            </ul>
+          </div>
+          <div class="ui-bg">
+            <div class="ui-bg-color" data-key="2bg"></div>
+            <div class="ui-bg-img" data-key="2bg-img"></div>
+          </div>
         </div>
       </div>
-
-      <div class="ui-card" data-flip-no-scale data-key="2card">
-        <div class="ui-feature" data-flip-no-scale data-key="2feature"></div>
-        <div class="ui-content" data-flip-no-scale data-key="2content">
-          <div class="ui-title" data-flip-no-scale data-key="2title">
-            InVision iOS
-          </div>
-          <div class="ui-subtitle" data-flip-no-scale data-key="2subtitle">
-            24 Documents
-          </div>
-          <ul class="ui-items" data-flip-no-scale data-key="2items">
-            <li class="ui-item">Something 1</li>
-            <li class="ui-item">Something 2</li>
-            <li class="ui-item">Something 3</li>
-            <li class="ui-item">Something 4</li>
-            <li class="ui-item">Something 5</li>
-          </ul>
-        </div>
-        <div class="ui-bg">
-          <div class="ui-bg-color" data-key="2bg"></div>
-          <div class="ui-bg-img" data-key="2bg-img"></div>
-        </div>
-      </div>
+      <footer class="ui-footer"></footer>
     </div>
-    <footer class="ui-footer"></footer>
-  </div>
-  <script href="https://unpkg.com/web-animate/dist/web-animate.min.js"></script>
-  <script src="../dist/flipping.web.js"></script>
-  <script>
-    let state = 'a';
+    <script src="../dist/flipping.web.js"></script>
+    <script>
+      let state = 'a';
 
-    const flipping = new Flipping({
-      duration: 1000,
-      attribute: 'data-key',
-      // selector: '[data-key]',
-      activeSelector: (el) => {
-        return  state === 'a' || el.matches('.ui-cards') || el.matches('.active *') || el.classList.contains('active')
-      },
-      plugins: []
-    });
-    
-    const cards = document.querySelectorAll('.ui-card')
-    const machine = {
-      a: { CLICK: 'b' },
-      b: { CLICK: 'a' }
-    };
-    
-    
-    cards.forEach(card => {
-      card.addEventListener('click', flipping.wrap(() => {
-        console.log(state);
-        state = machine[state].CLICK;
-        if (state === 'b') {          
-          const activeCard = document.querySelector('.active');
-          activeCard && activeCard.classList.toggle('active');
-          card.classList.toggle('active');
-        }
-        document.body.setAttribute('data-state', state);
-      }));
-    });
-  </script>
-</body>
+      const flipping = new Flipping({
+        duration: 1000,
+        attribute: 'data-key',
+        // selector: '[data-key]',
+        activeSelector: el => {
+          return (
+            state === 'a' ||
+            el.matches('.ui-cards') ||
+            el.matches('.active *') ||
+            el.classList.contains('active')
+          );
+        },
+        plugins: []
+      });
+
+      const cards = document.querySelectorAll('.ui-card');
+      const machine = {
+        a: { CLICK: 'b' },
+        b: { CLICK: 'a' }
+      };
+
+      cards.forEach(card => {
+        card.addEventListener(
+          'click',
+          flipping.wrap(() => {
+            console.log(state);
+            state = machine[state].CLICK;
+            if (state === 'b') {
+              const activeCard = document.querySelector('.active');
+              activeCard && activeCard.classList.toggle('active');
+              card.classList.toggle('active');
+            }
+            document.body.setAttribute('data-state', state);
+          })
+        );
+      });
+    </script>
+  </body>
 </html>
