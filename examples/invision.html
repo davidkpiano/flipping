@@ -10,19 +10,27 @@
 
   <body data-state="a">
     <input type="checkbox" name="" id="check" checked />
-    <div id="app" data-key="app">
+    <div id="app" data-flip-key="app">
       <header class="ui-header"></header>
-      <div class="ui-cards" data-flip-no-scale data-key="cards">
-        <div class="ui-card" data-flip-no-scale data-key="card">
-          <div class="ui-feature" data-flip-no-scale data-key="feature"></div>
-          <div class="ui-content" data-flip-no-scale data-key="content">
-            <div class="ui-title" data-flip-no-scale data-key="title">
+      <div class="ui-cards" data-flip-no-scale data-flip-key="cards">
+        <div class="ui-card" data-flip-no-scale data-flip-key="card">
+          <div
+            class="ui-feature"
+            data-flip-no-scale
+            data-flip-key="feature"
+          ></div>
+          <div class="ui-content" data-flip-no-scale data-flip-key="content">
+            <div class="ui-title" data-flip-no-scale data-flip-key="title">
               InVision iOS
             </div>
-            <div class="ui-subtitle" data-flip-no-scale data-key="subtitle">
+            <div
+              class="ui-subtitle"
+              data-flip-no-scale
+              data-flip-key="subtitle"
+            >
               24 Documents
             </div>
-            <ul class="ui-items" data-flip-no-scale data-key="items">
+            <ul class="ui-items" data-flip-no-scale data-flip-key="items">
               <li class="ui-item">Something 1</li>
               <li class="ui-item">Something 2</li>
               <li class="ui-item">Something 3</li>
@@ -31,21 +39,29 @@
             </ul>
           </div>
           <div class="ui-bg">
-            <div class="ui-bg-color" data-key="bg"></div>
-            <div class="ui-bg-img" data-key="bg-img"></div>
+            <div class="ui-bg-color" data-flip-key="bg"></div>
+            <div class="ui-bg-img" data-flip-key="bg-img"></div>
           </div>
         </div>
 
-        <div class="ui-card" data-flip-no-scale data-key="2card">
-          <div class="ui-feature" data-flip-no-scale data-key="2feature"></div>
-          <div class="ui-content" data-flip-no-scale data-key="2content">
-            <div class="ui-title" data-flip-no-scale data-key="2title">
+        <div class="ui-card" data-flip-no-scale data-flip-key="2card">
+          <div
+            class="ui-feature"
+            data-flip-no-scale
+            data-flip-key="2feature"
+          ></div>
+          <div class="ui-content" data-flip-no-scale data-flip-key="2content">
+            <div class="ui-title" data-flip-no-scale data-flip-key="2title">
               InVision iOS
             </div>
-            <div class="ui-subtitle" data-flip-no-scale data-key="2subtitle">
+            <div
+              class="ui-subtitle"
+              data-flip-no-scale
+              data-flip-key="2subtitle"
+            >
               24 Documents
             </div>
-            <ul class="ui-items" data-flip-no-scale data-key="2items">
+            <ul class="ui-items" data-flip-no-scale data-flip-key="2items">
               <li class="ui-item">Something 1</li>
               <li class="ui-item">Something 2</li>
               <li class="ui-item">Something 3</li>
@@ -54,21 +70,22 @@
             </ul>
           </div>
           <div class="ui-bg">
-            <div class="ui-bg-color" data-key="2bg"></div>
-            <div class="ui-bg-img" data-key="2bg-img"></div>
+            <div class="ui-bg-color" data-flip-key="2bg"></div>
+            <div class="ui-bg-img" data-flip-key="2bg-img"></div>
           </div>
         </div>
       </div>
       <footer class="ui-footer"></footer>
     </div>
-    <script src="../dist/flipping.web.js"></script>
+    <script src="../dist/flipping.js"></script>
     <script>
       let state = 'a';
 
-      const flipping = new Flipping({
+      Flipping.keyAttr = 'data-flip-key';
+      const flipping = new Flipping.Flipping({
         duration: 1000,
-        attribute: 'data-key',
-        // selector: '[data-key]',
+        attribute: 'data-flip-key',
+        // selector: '[data-flip-key]',
         activeSelector: el => {
           return (
             state === 'a' ||
@@ -79,6 +96,8 @@
         },
         plugins: []
       });
+
+      flipping.applyDefaultStyles();
 
       const cards = document.querySelectorAll('.ui-card');
       const machine = {

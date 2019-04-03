@@ -1,0 +1,76 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+  position: relative; }
+
+html,
+body {
+  height: 100%;
+  width: 100%; }
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center; }
+
+#app {
+  height: 90vh;
+  width: 45vh;
+  outline: 1px solid black;
+  padding: 1rem; }
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; }
+  .layer:not([data-active]) {
+    display: none; }
+
+.-bg:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg); }
+
+.ticket {
+  --bg: blue;
+  padding: 1rem;
+  border-radius: 1rem;
+  color: white;
+  display: grid;
+  grid-template-columns: 1fr 5rem; }
+  .ticket > .qrcode {
+    grid-column: 2 / 3; }
+
+.full-ticket {
+  --bg: blue;
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-rows: 50% 50%; }
+  .full-ticket > .qrcode {
+    grid-row: 2 /3;
+    height: 8rem;
+    width: 8rem; }
+
+.qrcode {
+  border: 2px solid black;
+  background-color: white;
+  height: 3rem;
+  width: 3rem;
+  align-self: center;
+  justify-self: center;
+  transition: transform 1s;
+  transform-origin: 0 0; }
+  .qrcode[data-flip-state='pre-move'] {
+    transition: none;
+    transform: var(--flip-curve); }
+  .qrcode[data-flip-state='move'] {
+    transform: var(--flip-fcurve); }

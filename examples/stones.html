@@ -286,11 +286,11 @@
       let currentState = 'sapphire';
 
       // FLIPPING!
-      const flipping = new Flipping.Flipping();
+      const flipping = Flipping.create();
 
       flipping.applyDefaultStyles();
 
-      flipping.read();
+      // flipping.read();
 
       function update(state) {
         gemstonesElm.setAttribute('data-state', state);

@@ -62,25 +62,21 @@
       }
 
       [data-flip-state] {
-        will-change: transform;
+        transition: transform 0.5s ease;
       }
-      [data-flip-state="read"] {
-        transition: none;
-      }
-      [data-flip-state="pre-move"] {
-        transition: none;
-        transform: translate(var(--flip-ix-px), var(--flip-iy-px)) rotate(-2turn);
-      }
-      [data-flip-state="move"] {
-        transition: all .6s ease;
-        transform: none;
-      }
-      [data-flip-state="pre-enter"] {
+      [data-flip-state='pre-enter'] {
         transition: none;
         transform: scale(0);
       }
-      [data-flip-state="enter"] {
+      [data-flip-state='enter'] {
         transform: scale(1);
+      }
+      [data-flip-state='pre-move'] {
+        transition: none;
+        transform: var(--flip-curve);
+      }
+      [data-flip-state='move'] {
+        transform: var(--flip-fcurve);
       }
 
       [data-state^='C'] [data-flip-key='C'] {
@@ -123,12 +119,11 @@
     </h1>
     <h2>
       <span data-flip-key="Dev">Dev</span>
-      <span data-flip-key="Conference">Conference</span>
-      <span></span>
-
+      <span data-flip-key="Conference">Conference</span> <span></span>
     </h2>
     <script>
       const flipping = new Flipping.Flipping();
+      // flipping.applyDefaultStyles();
       const el = document.querySelector(`[data-flip-key="C"]`);
       flipping.onFlip(data => {
         // console.log(data.key, data.state);
@@ -141,10 +136,9 @@
         'CSS Dev Conference': 'C'
       };
 
-
       let state = 'C';
 
-      flipping.read();
+      // flipping.read();
 
       document.body.addEventListener('click', () => {
         flipping.read();

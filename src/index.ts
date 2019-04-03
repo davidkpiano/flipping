@@ -100,13 +100,13 @@ export function getInverse(delta: Delta): Delta {
 }
 type FlipData = {
   state:
-    | "read"
-    | "pre-enter"
-    | "enter"
-    | "pre-move"
-    | "move"
-    | "pre-exit"
-    | "exit";
+    | 'read'
+    | 'pre-enter'
+    | 'enter'
+    | 'pre-move'
+    | 'move'
+    | 'pre-exit'
+    | 'exit';
   key: string;
   element: HTMLElement | undefined;
   rect: Rect | undefined;
@@ -129,14 +129,19 @@ export function isVisible(element?: HTMLElement) {
 
   return !(width === 0 && height === 0);
 }
+
+interface FlippingConfig {
+  getKey: ((element: HTMLElement) => string | null | undefined) | string;
+}
 export class Flipping {
   public data: Record<string, FlipData | undefined> = {};
   public listeners: Map<string, FlipListener> = new Map();
   public globalListeners: Set<FlipListener> = new Set();
-  public static prefix = "flip";
-  public static keyAttr = "data-flip-key";
+  public config: FlippingConfig;
+  public static prefix = 'flip';
+  public static keyAttr = 'data-flip-key';
 
-  public config = {
+  public static defaultConfig = {
     getKey(element: Element): string {
       const key = element.getAttribute(Flipping.keyAttr);
 
@@ -150,7 +155,16 @@ export class Flipping {
     }
   };
 
-  constructor() {}
+  public static create(config: FlippingConfig = Flipping.defaultConfig) {
+    return new Flipping(config);
+  }
+
+  constructor(config: FlippingConfig = Flipping.defaultConfig) {
+    this.config = {
+      ...Flipping.defaultConfig,
+      ...config
+    };
+  }
 
   public onFlip(globalListener: FlipListener): void {
     this.globalListeners.add(globalListener);
@@ -185,6 +199,38 @@ export class Flipping {
     const distX = Math.abs(data.delta.left);
     const distY = Math.abs(data.delta.top);
 
+    // const h = Math.hypot(distX, distY);
+    // const arm = h / 2 / Math.cos(Math.atan(distX / distY));
+    // const arm2 = (distX + distY) / 2;
+    // const armRatio = arm / distY;
+    // const theta = Math.asin(h / 2 / arm) * 2;
+
+    const inverseXY = `translate(${data.inverse.left}px, ${
+      data.inverse.top
+    }px)`;
+    const inverseScale = `scale(${data.inverse.widthRatio}, ${
+      data.inverse.heightRatio
+    })`;
+
+    // const s = `translateY(${data.inverse.top *
+    //   armRatio}px) rotate(${-theta}rad) translateY(${data.delta.top *
+    //   armRatio}px) rotate(${theta}rad)`;
+
+    // const ss = `translateY(${data.inverse.top *
+    //   armRatio}px) rotate(0deg) translateY(${data.delta.top *
+    //   armRatio}px) rotate(0deg)`;
+
+    const a = `translate(${data.inverse.left + data.inverse.top}px, ${
+      data.inverse.top
+    }px) rotate(-90deg) translateY(${
+      data.delta.top
+    }px) rotate(90deg) ${inverseScale}`;
+    const aa = `translate(${data.inverse.left + data.inverse.top}px, ${
+      data.inverse.top
+    }px) rotate(0deg) translate(${data.delta.left + data.delta.top}px, ${
+      data.delta.top
+    }px) rotate(0deg) scale(1)`;
+
     Flipping.style(
       data,
       {
@@ -197,29 +243,28 @@ export class Flipping {
         // inverse delta
         ix: data.inverse.left,
         iy: data.inverse.top,
-        "inverse-xy": `translate(${data.inverse.left}px, ${
-          data.inverse.top
-        }px)`,
+        'inverse-xy': inverseXY,
         // scale
         iw: data.inverse.width,
         ih: data.inverse.height,
-        "iw-ratio": data.inverse.widthRatio,
-        "ih-ratio": data.inverse.heightRatio,
-        "inverse-scale": `scale(${data.inverse.widthRatio}, ${
-          data.inverse.heightRatio
-        })`,
+        'iw-ratio': data.inverse.widthRatio,
+        'ih-ratio': data.inverse.heightRatio,
+        'inverse-scale': inverseScale,
         // distance
-        "distance-x": distX,
-        "distance-y": distY,
+        'distance-x': distX,
+        'distance-y': distY,
         distance: Math.hypot(distX, distY),
         // radius
-        "inverse-radius-x": `calc((${data.styles.radius} * ${
+        'inverse-radius-x': `calc((${data.styles.radius} * ${
           data.delta.widthRatio
         }))`,
-        "inverse-radius-y": `calc((${data.styles.radius} * ${
+        'inverse-radius-y': `calc((${data.styles.radius} * ${
           data.delta.heightRatio
         }))`,
-        "inverse-radius": `var(--flip-inverse-radius-x) / var(--flip-inverse-radius-y)`
+        'inverse-radius': `var(--flip-inverse-radius-x) / var(--flip-inverse-radius-y)`,
+        // curve
+        curve: a,
+        fcurve: aa
       },
       { px: true }
     );
@@ -239,11 +284,11 @@ export class Flipping {
     const resolvedOptions = { px: true, ...options };
 
     Object.keys(styles).forEach(property => {
-      const fullProperty = `--${Flipping.prefix + "-" + property}`;
+      const fullProperty = `--${Flipping.prefix + '-' + property}`;
       const value = `${styles[property]}`;
       element.style.setProperty(fullProperty, value);
 
-      if (resolvedOptions.px) {
+      if (resolvedOptions.px && !isNaN(+fullProperty)) {
         element.style.setProperty(`${fullProperty}-px`, `${value}px`);
       }
     });
@@ -261,7 +306,14 @@ export class Flipping {
 
     if (Array.isArray(elements)) {
       elements.forEach(element => {
-        const key = this.config.getKey(element);
+        const key =
+          typeof this.config.getKey === 'string'
+            ? element.getAttribute(this.config.getKey)
+            : this.config.getKey(element);
+
+        if (!key) {
+          return;
+        }
 
         map[key] = element;
       });
@@ -272,9 +324,6 @@ export class Flipping {
     return elements;
   }
 
-  public read(): void;
-  public read(elements: HTMLElement[]): void;
-  public read(elementMap: FlipElementMap): void;
   public read(elements?: HTMLElement[] | FlipElementMap): void {
     const elementMap = this.toElementMap(elements);
     Object.keys(elementMap).forEach(key => {
@@ -288,7 +337,7 @@ export class Flipping {
       this.set(key, {
         key,
         element,
-        state: "read",
+        state: 'read',
         rect: getRect(element, this.findAncestor(element)),
         styles: getStyles(element),
         delta: NO_DELTA,
@@ -298,8 +347,6 @@ export class Flipping {
     });
   }
 
-  public flip(): void;
-  public flip(elements: HTMLElement[]): void;
   public flip(elements?: HTMLElement[]) {
     const elementMap = this.toElementMap(elements);
     const allKeys = new Set(
@@ -314,15 +361,12 @@ export class Flipping {
       const visible = isVisible(element);
 
       if (!element || !visible) {
-        console.log(">>>", existingData);
         data = {
           key,
           element,
-          state: "exit",
-          rect: element
-            ? getRect(element, this.findAncestor(element))
-            : undefined,
-          styles: element ? getStyles(element) : undefined,
+          state: 'exit',
+          rect: undefined,
+          styles: undefined,
           delta: NO_DELTA,
           inverse: NO_DELTA,
           previous: existingData
@@ -331,7 +375,7 @@ export class Flipping {
         data = {
           key,
           element,
-          state: "enter",
+          state: 'enter',
           rect: getRect(element, this.findAncestor(element)),
           styles: getStyles(element),
           delta: NO_DELTA,
@@ -350,13 +394,13 @@ export class Flipping {
           key,
           element,
           state:
-            existingData.state === "exit"
+            existingData.state === 'exit'
               ? visible
-                ? "enter"
-                : "exit"
+                ? 'enter'
+                : 'exit'
               : visible
-                ? "move"
-                : "exit",
+              ? 'move'
+              : 'exit',
           rect: getRect(element, this.findAncestor(element)),
           styles: getStyles(element),
           delta,
@@ -368,7 +412,7 @@ export class Flipping {
       requestAnimationFrame(() => {
         this.set(key, {
           ...data,
-          state: `pre-${data.state}` as "pre-enter" | "pre-move" | "pre-exit"
+          state: `pre-${data.state}` as 'pre-enter' | 'pre-move' | 'pre-exit'
         });
 
         requestAnimationFrame(() => {
@@ -377,11 +421,14 @@ export class Flipping {
       });
     });
   }
-  public wrap<T>(fn: (...args: any[]) => T): (...args: any[]) => T {
+  public wrap<T>(
+    fn: (...args: any[]) => T,
+    elements?: HTMLElement[]
+  ): (...args: any[]) => T {
     return (...args) => {
-      this.read();
+      this.read(elements);
       const result = fn.apply(null, args) as T;
-      this.flip();
+      this.flip(elements);
       return result;
     };
   }
@@ -405,10 +452,10 @@ export class Flipping {
       }
     `;
 
-    const elStyle = document.createElement("style");
+    const elStyle = document.createElement('style');
     elStyle.innerHTML = styles;
     document.head.appendChild(elStyle);
   }
 }
 
-// function
+export const create = Flipping.create;

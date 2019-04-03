@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Boarding</title>
+    <link rel="stylesheet" href="./css/boarding.css" />
+    <script src="../dist/flipping.js"></script>
+  </head>
+  <body>
+    <div id="app" data-state="tickets">
+      <div class="layer -tickets" data-show="tickets">
+        <div class="ticket -bg" data-flip-key="ticket">
+          <div class="qrcode" data-flip-key="qr"></div>
+        </div>
+      </div>
+      <div class="layer -ticket" data-show="ticket">
+        <div class="full-ticket -bg" data-flip-key="ticket">
+          <div class="qrcode" data-flip-key="qr"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const flipping = new Flipping.Flipping();
+    const elApp = document.querySelector('#app');
+    function activate(state) {
+      elApp.dataset.state = state;
+
+      document.querySelectorAll('[data-active]').forEach(el => {
+        el.removeAttribute('data-active');
+      });
+
+      document
+        .querySelectorAll(
+          `[data-show~="${state}"], [data-hide]:not([data-hide~="${state}"])`
+        )
+        .forEach(el => {
+          el.setAttribute('data-active', true);
+        });
+    }
+
+    const machine = {
+      initial: 'tickets',
+      states: {
+        tickets: {
+          on: { CLICK: 'ticket' }
+        },
+        ticket: {
+          on: { CLICK: 'tickets' }
+        }
+      }
+    };
+
+    let current = machine.initial;
+
+    activate(current);
+
+    elApp.addEventListener(
+      'click',
+      flipping.wrap(() => {
+        current = machine.states[current].on['CLICK'];
+        activate(current);
+      })
+    );
+  </script>
+</html>
