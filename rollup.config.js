@@ -20,9 +20,7 @@ const createConfig = ({ input, output }) => ({
       },
     }),
     terser(),
-    cleanup({
-      comments: 'none',
-    }),
+
     fileSize(),
   ],
 });
@@ -45,6 +43,9 @@ export default {
       },
     }),
     terser(),
+    cleanup({
+      comments: 'none',
+    }),
     fileSize(),
   ],
 };
