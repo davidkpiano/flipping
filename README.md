@@ -18,10 +18,18 @@ For more information about the FLIP technique, view the flipping slides:
 npm install flipping@latest --save
 ```
 
+- `flipping.js`: tiny and low-level; only emits events when element bounds change    
+- `flipping.web.js`: uses [WAAPI](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) to animate transitions. _For older browsers a [Polyfill](https://github.com/web-animations/web-animations-js) might be needed._
+- `flipping.gsap.js`: uses [GSAP](https://greensock.com/) to animate transitions
+- _More adapters coming soon!_
+
+
 Or grab the files directly:
 - https://unpkg.com/flipping@latest/dist/flipping.js (core)
 - https://unpkg.com/flipping@latest/dist/flipping.web.js (WAAPI adapter)
+- https://unpkg.com/flipping@latest/dist/flipping.gsap.js (GASP adapter)
 - 🔜 https://unpkg.com/flipping@latest/dist/flipping.css.js (CSS adapter - WIP!)
+
 
 ## Quick Start
 
